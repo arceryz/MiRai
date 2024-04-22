@@ -1,0 +1,42 @@
+// We require version 430 since it supports compute shaders.
+#version 430
+
+// This is the workgroup size. The largest size that is guaranteed by OpenGL 
+// to available is 1024, beyond this is uncertain.
+// Might influence performance but only in advanced cases.
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+
+struct LineSegment {
+    vec2 u;
+    vec2 v;
+};
+
+// Two buffers are here.
+// The ray ssbo is packed per bounce, ie numPoints * numBounces.
+layout(std430, binding=0) buffer lineBuf {  LineSegment segments[]; };
+layout(std430, binding=1) buffer rayBuf { float distances[]; };
+
+layout(location=0) uniform int numPoints;
+layout(location=1) uniform int numBounces;
+
+const float PI = 3.14159;
+
+void main()
+{
+    // Index represents the point that we are casting.
+    // This ranges from 0 to numPoints.
+    // Our objective is to set at distances[i + N*depth] = distance of Nth collision.
+    // That way we have multiple depth layers.
+    // TODO: First single depth raycast test.
+    uint index = gl_GlobalInvocationID.x;
+    float prog = float(index) / numPoints;
+
+    // Ray originate from (0, 0).
+    vec2 ray;
+    ray.x = cos(2*PI*prog);
+    ray.y = sin(2*PI*prog);
+
+    distances[index] = 0.6 + 0.4 * sin(2*PI*prog*10);
+    // Now we trace a ray to the first line segment.
+}
+

@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "MyRun",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "preLaunchTask": "CMake: build",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/build/Debug/Mirai.exe",
+            "console": "integratedTerminal"
+        }
+    ]
+}
