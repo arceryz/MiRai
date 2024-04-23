@@ -4,16 +4,17 @@
 // This is the workgroup size. The largest size that is guaranteed by OpenGL 
 // to available is 1024, beyond this is uncertain.
 // Might influence performance but only in advanced cases.
-layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 // Two buffers are here.
 // The ray ssbo is packed per bounce, ie numPoints * numBounces.
-layout(std430, binding=0) buffer lineBuf {  vec2 points[]; };
-layout(std430, binding=1) buffer rayBuf { float distances[]; };
+layout(std430, binding=0) buffer pointSSBO {  vec2 points[]; };
+layout(std430, binding=1) buffer distanceSSBO { float distances[]; };
 
-layout(location=0) uniform int numPoints;
+layout(location=0) uniform int numRays;
 layout(location=1) uniform int numBounces;
-layout(location=2) uniform int numPolygonPoints;
+layout(location=2) uniform int numPoints;
+layout(location=3) uniform float focus;
 
 const float PI = 3.14159;
 const float STEP_MIN = 0.0001;
@@ -24,16 +25,16 @@ struct HitInfo {
     vec2 normal;
 };
 HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v);
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq);
 
 void main()
 {
     // Index represents the point that we are casting.
-    // This ranges from 0 to numPoints.
-    // Our objective is to set at distances[i + N*depth] = distance of Nth collision.
+    // This ranges from 0 to numRays.
+    // We write distances for each particle at the numBounces consecutive positions.
     // That way we have multiple depth layers.
-    // TODO: First single depth raycast test.
     uint index = gl_GlobalInvocationID.x;
-    float prog = float(index) / numPoints;
+    float prog = float(index) / numRays;
 
     // Ray originate from (0, 0).
     vec2 ray;
@@ -42,18 +43,23 @@ void main()
 
     vec2 origin = vec2(0);
 
-    distances[index] = 0;
-
+    // Trace all bounces and store the distance at each collision.
     float travelled = 0;
-    for (int j = 0; j < numBounces; j++) {
+    for (int i = 0; i < numBounces; i++) {
         HitInfo hitmin;
         hitmin.t = -1;
 
-        for (int i = 0; i < numPolygonPoints; i++) {
-            vec2 u = points[i];
-            vec2 v = points[(i+1)%numPolygonPoints];
+        // Evaluate every mirror plane.
+        for (int j = 0; j < numPoints; j++) {
+            vec2 u = points[j];
+            vec2 v = points[(j+1)%numPoints];
 
-            HitInfo hit = RayLineHit(origin, ray, u, v);
+            vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+            vec2 arc = (u+v)/2 + n * focus;
+            float rsq = dot(arc-u, arc-u);
+
+            //HitInfo hit = RayLineHit(origin, ray, u, v);
+            HitInfo hit = RayCircleHit(origin, ray, arc, rsq);
             if (hit.t > STEP_MIN && (hitmin.t < 0 || hit.t < hitmin.t)) {
                 hitmin = hit;
             }
@@ -64,7 +70,9 @@ void main()
         origin = hitmin.point;
         travelled += hitmin.t;
 
-        distances[index+numPoints*j] = travelled;
+        // Write at bounce dependent index.
+        // If numbounces changes, then the stride grows with it.
+        distances[index*numBounces+i] = travelled;
     }
 
 }
@@ -84,5 +92,30 @@ HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v)
     hit.point = o + t*d;
     hit.normal = n;
     hit.t = t;
+    return hit;
+}
+
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq)
+{
+    // Make the point relative to the circle.
+    vec2 rel = o-cc;
+
+    float a = dot(d, d);
+    float b = 2*dot(rel, d);
+    float c = dot(rel, rel) - rsq;
+    float D = b*b - 4*a*c;
+
+    // We take an absolute value here, but if the
+    // square root ends up negative we set t to zero.
+    float sqrtD = sqrt(abs(D));
+    float t1 = (-b - sqrtD) / (2*a);
+    float t2 = (-b + sqrtD) / (2*a);
+
+    float t = max(t1, t2);
+
+    HitInfo hit;
+    hit.point = o + t*d;
+    hit.normal = normalize(cc - hit.point);
+    hit.t = t * float(D > 0);
     return hit;
 }

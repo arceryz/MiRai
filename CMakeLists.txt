@@ -12,7 +12,9 @@ set(BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(OPENGL_VERSION "4.3")
 FetchContent_MakeAvailable(raylib)
 
-file(GLOB SOURCES Source/*.cpp Source/*.h)
+include_directories(Source/Ray2)
+include_directories(Source)
+file(GLOB SOURCES Source/*.cpp Source/Ray2/*.cpp)
 
 add_executable(Mirai ${SOURCES})
 target_link_libraries(Mirai raylib)
