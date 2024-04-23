@@ -6,20 +6,24 @@
 // Might influence performance but only in advanced cases.
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
-struct LineSegment {
-    vec2 u;
-    vec2 v;
-};
-
 // Two buffers are here.
 // The ray ssbo is packed per bounce, ie numPoints * numBounces.
-layout(std430, binding=0) buffer lineBuf {  LineSegment segments[]; };
+layout(std430, binding=0) buffer lineBuf {  vec2 points[]; };
 layout(std430, binding=1) buffer rayBuf { float distances[]; };
 
 layout(location=0) uniform int numPoints;
 layout(location=1) uniform int numBounces;
+layout(location=2) uniform int numPolygonPoints;
 
 const float PI = 3.14159;
+const float STEP_MIN = 0.0001;
+
+struct HitInfo {
+    float t;
+    vec2 point;
+    vec2 normal;
+};
+HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v);
 
 void main()
 {
@@ -36,7 +40,49 @@ void main()
     ray.x = cos(2*PI*prog);
     ray.y = sin(2*PI*prog);
 
-    distances[index] = 0.6 + 0.4 * sin(2*PI*prog*10);
-    // Now we trace a ray to the first line segment.
+    vec2 origin = vec2(0);
+
+    distances[index] = 0;
+
+    float travelled = 0;
+    for (int j = 0; j < numBounces; j++) {
+        HitInfo hitmin;
+        hitmin.t = -1;
+
+        for (int i = 0; i < numPolygonPoints; i++) {
+            vec2 u = points[i];
+            vec2 v = points[(i+1)%numPolygonPoints];
+
+            HitInfo hit = RayLineHit(origin, ray, u, v);
+            if (hit.t > STEP_MIN && (hitmin.t < 0 || hit.t < hitmin.t)) {
+                hitmin = hit;
+            }
+        }
+
+        // Reflect.
+        ray = ray - 2*hitmin.normal*dot(hitmin.normal, ray);
+        origin = hitmin.point;
+        travelled += hitmin.t;
+
+        distances[index+numPoints*j] = travelled;
+    }
+
 }
 
+// This function collides a ray o+td with a line uv.
+HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v) 
+{
+    // The normal is a left-rotated vector.
+    vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+    float nd = dot(n, d);
+
+    // We ensure that the dotproduct can't be zero
+    // by adding a small factor when its zero.
+    float t = dot(n, u-o) / (nd + float(nd==0)*0.001);
+
+    HitInfo hit;
+    hit.point = o + t*d;
+    hit.normal = n;
+    hit.t = t;
+    return hit;
+}

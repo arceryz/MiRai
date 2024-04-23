@@ -11,7 +11,7 @@ struct LineSegment {
 
 // Two buffers are here.
 // The ray ssbo is packed per bounce, ie numPoints * numBounces.
-layout(std430, binding=0) buffer lineBuf {  LineSegment segments[]; };
+layout(std430, binding=0) buffer lineBuf {  vec2 points[]; };
 layout(std430, binding=1) buffer rayBuf { float distances[]; };
 
 layout(location=0) uniform int numPoints;
@@ -32,10 +32,10 @@ void main()
     vec2 ray;
     ray.x = cos(2*PI*prog);
     ray.y = sin(2*PI*prog);
-    ray *= dist;
+    ray *= 0.1*dist;
 
     vec2 pos = vertexPosition;
-    pos *= 0.01;
+    pos *= 0.002;
     pos += ray;
 
     gl_Position = vec4(pos.xy, 0, 1);
