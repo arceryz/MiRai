@@ -7,7 +7,7 @@ layout (location=0) in vec2 vertexPosition;
 // Two buffers are here.
 // The ray ssbo is packed per bounce, ie numPoints * numBounces.
 layout(std430, binding=0) buffer pointSSBO {  vec2 points[]; };
-layout(std430, binding=1) buffer distanceSSBO { float distances[]; };
+layout(std430, binding=1) buffer distanceSSBO { vec2 distances[]; };
 
 layout(location=0) uniform int numRays;
 layout(location=1) uniform int numBounces;
@@ -23,7 +23,10 @@ const float PI = 3.14159;
 
 void main()
 {
-    float dist = distances[gl_InstanceID];
+    vec2 dvec = distances[gl_InstanceID];
+    float dist = dvec.x;
+    float dmin = dvec.y;
+
     int depth = gl_InstanceID % numBounces;
     float prog = float(gl_InstanceID/numBounces) / numRays;
 
@@ -41,5 +44,6 @@ void main()
     localPos = vertexPosition;
 
     float fade = pow(falloff, depth);
+    //fade *= 0.3+0.7*float(dmin<0.1);
     fragColor = vec4(color*fade, 1);
 }

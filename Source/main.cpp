@@ -45,7 +45,6 @@ int main()
         BeginMode2D(camera);
         ray2.ComputePass();
         ray2.RenderPass();
-        //DrawCircle(400, 400, 100, GREEN);
         EndMode2D();
 
         DrawText(TextFormat("N=%d", ray2.numRays), 10, 30, 20, DARKGRAY);
@@ -54,7 +53,7 @@ int main()
         float ox = 170;
         float oy = 15;
         GuiSlider({ ox, oy, 200, 10 }, "Rays%", TextFormat("%3.1f", 100*numRaysFact), &numRaysFact, 0, 1);
-        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.1f", ray2.arcFocus), &focusFact, 0, 1);
+        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f", ray2.arcFocus), &focusFact, 0, 1);
         GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", camera.zoom), &camera.zoom, 0.1, 2);
         GuiCheckBox({ ox+240, oy+15, 20, 20 }, "Hyperbolic", &hyperbolic);
         GuiSpinner({ ox, oy+40, 80, 15 }, "Num Bounces ", &ray2.numBounces, 1, MAX_BOUNCES, false);

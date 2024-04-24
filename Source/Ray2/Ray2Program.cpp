@@ -15,7 +15,7 @@ Ray2Program::Ray2Program()
     UnloadFileText(code);   
 
     const int maxPointsSize = sizeof(Vector2)*MAX_POINTS;
-    const int maxDistancesSize = sizeof(float)*MAX_RAYS*MAX_BOUNCES;
+    const int maxDistancesSize = sizeof(Vector2)*MAX_RAYS*MAX_BOUNCES;
 
     // Setup the SSBO's for the points and for the line segments.
     void *zeropoints = RL_MALLOC(maxPointsSize);
@@ -52,6 +52,10 @@ void Ray2Program::ComputePass()
     rlSetUniform(1, &numBounces, SHADER_UNIFORM_INT, 1);
     rlSetUniform(2, &numPoints, SHADER_UNIFORM_INT, 1);
     rlSetUniform(3, &arcFocus, SHADER_UNIFORM_FLOAT, 1);
+
+    float time = GetTime();
+    rlSetUniform(4, &time, SHADER_UNIFORM_FLOAT, 1);
+
     rlBindShaderBuffer(pointSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);
 
