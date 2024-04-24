@@ -51,6 +51,7 @@ void Ray2Program::ComputePass()
     rlSetUniform(0, &numRays, SHADER_UNIFORM_INT, 1);
     rlSetUniform(1, &numBounces, SHADER_UNIFORM_INT, 1);
     rlSetUniform(2, &numPoints, SHADER_UNIFORM_INT, 1);
+    rlSetUniform(3, &arcFocus, SHADER_UNIFORM_FLOAT, 1);
     rlBindShaderBuffer(pointSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);
 
@@ -75,8 +76,4 @@ void Ray2Program::RenderPass()
     rlDrawVertexArrayInstanced(0, 3, numRays*numBounces);
     rlDisableVertexArray(); 
     rlDisableShader();
-}
-void Ray2Program::ComputeFocus()
-{
-    
 }

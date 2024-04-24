@@ -8,7 +8,7 @@
 #define MAX_BOUNCES 16
 #define MAX_WORKGROUPS 500
 #define MAX_RAYS (MAX_WORKGROUPS*WORKGROUP_SIZE)
-#define ARC_RADIUS_INF 1000
+#define ARC_FOCUS_INF 1000.0f
 
 // This class represents the 2D mirror raytracer.
 // It handles the compute and rendering part internally
@@ -22,10 +22,10 @@ public:
     float falloff = 0.7;
     float pointSize = 1.0;
 
-    // If the radius is +-INF, then we have the straight edges.
-    // If the radius is positive, we enter spherical space.
-    // If the radius is negative, we enter hyperbolic space.
-    float arcRadius = ARC_RADIUS_INF;
+    // If the focus is +-INF, then we have the straight edges.
+    // If the focus is positive, we enter spherical space.
+    // If the focus is negative, we enter hyperbolic space.
+    float arcFocus = ARC_FOCUS_INF;
 
     Ray2Program();
     void UpdatePoints(int num, Vector2 *points);
@@ -40,9 +40,6 @@ private:
     Shader renderProgram = {};
     int numPoints = 0;
     int numWorkGroups = 0;
-    float focus = 0;
-
-    void ComputeFocus();
 };
 
 #endif

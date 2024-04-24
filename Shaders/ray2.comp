@@ -14,10 +14,11 @@ layout(std430, binding=1) buffer distanceSSBO { float distances[]; };
 layout(location=0) uniform int numRays;
 layout(location=1) uniform int numBounces;
 layout(location=2) uniform int numPoints;
-layout(location=3) uniform float focus;
+layout(location=3) uniform float arcFocus;
 
 const float PI = 3.14159;
 const float STEP_MIN = 0.0001;
+const float ARC_FOCUS_INF = 1000.0f;
 
 struct HitInfo {
     float t;
@@ -25,7 +26,7 @@ struct HitInfo {
     vec2 normal;
 };
 HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v);
-HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq);
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool convex);
 
 void main()
 {
@@ -54,12 +55,17 @@ void main()
             vec2 u = points[j];
             vec2 v = points[(j+1)%numPoints];
 
-            vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
-            vec2 arc = (u+v)/2 + n * focus;
-            float rsq = dot(arc-u, arc-u);
-
-            //HitInfo hit = RayLineHit(origin, ray, u, v);
-            HitInfo hit = RayCircleHit(origin, ray, arc, rsq);
+            HitInfo hit;
+            if (abs(arcFocus) < ARC_FOCUS_INF) {
+                vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+                vec2 arc = (u+v)/2 + n * arcFocus;
+                float rsq = dot(arc-u, arc-u);
+                hit = RayCircleHit(origin, ray, arc, rsq, arcFocus >= 0);
+            }
+            else {
+                hit = RayLineHit(origin, ray, u, v);
+            }
+            
             if (hit.t > STEP_MIN && (hitmin.t < 0 || hit.t < hitmin.t)) {
                 hitmin = hit;
             }
@@ -95,7 +101,7 @@ HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v)
     return hit;
 }
 
-HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq)
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool convex)
 {
     // Make the point relative to the circle.
     vec2 rel = o-cc;
@@ -111,7 +117,7 @@ HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq)
     float t1 = (-b - sqrtD) / (2*a);
     float t2 = (-b + sqrtD) / (2*a);
 
-    float t = max(t1, t2);
+    float t = float(convex)*max(t1, t2) + (1-float(convex))*min(t1, t2);
 
     HitInfo hit;
     hit.point = o + t*d;

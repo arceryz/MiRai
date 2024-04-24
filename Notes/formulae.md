@@ -88,5 +88,3 @@ $$
 $$
 
 If we wish to compute the reflection *off* the surface, then we simply mirror the incoming vector pointing towards the normal. So this formula is a *mirror* reflection when $\vec{v}$ points in the same direction as the normal, and a *surface* reflection if $\vec{v}$ points in the opposite direction.
-
-## 4. Arc Radius To Focus
