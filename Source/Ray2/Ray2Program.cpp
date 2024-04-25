@@ -14,14 +14,17 @@ Ray2Program::Ray2Program()
     computeProgram = rlLoadComputeShaderProgram(shader);
     UnloadFileText(code);   
 
-    const int maxPointsSize = sizeof(Vector2)*MAX_POINTS;
+    const int maxMirrorsSize = sizeof(Vector2)*MAX_MIRRORS*2;
     const int maxDistancesSize = sizeof(Vector2)*MAX_RAYS*MAX_BOUNCES;
 
     // Setup the SSBO's for the points and for the line segments.
-    void *zeropoints = RL_MALLOC(maxPointsSize);
-    void *zerodistances = RL_MALLOC(maxDistancesSize);
-    pointSSBO = rlLoadShaderBuffer(maxPointsSize, zeropoints, RL_DYNAMIC_READ);
-    distanceSSBO = rlLoadShaderBuffer(maxDistancesSize, zerodistances, RL_DYNAMIC_COPY);
+    void *zeroMirrors = RL_MALLOC(maxMirrorsSize);
+    void *zeroDistances = RL_MALLOC(maxDistancesSize);
+    for (int i = 0; i < MAX_RAYS*MAX_BOUNCES; i++){ 
+       ( (Vector2*)zeroDistances)[i] = { 1.0f, 1.0f };
+    }
+    mirrorSSBO = rlLoadShaderBuffer(maxMirrorsSize, zeroMirrors, RL_DYNAMIC_READ);
+    distanceSSBO = rlLoadShaderBuffer(maxDistancesSize, zeroDistances, RL_DYNAMIC_COPY);
 
     // Setup the point VAO.
     Vector2 vertices[] = {
@@ -36,10 +39,10 @@ Ray2Program::Ray2Program()
     rlSetVertexAttribute(0, 2, RL_FLOAT, false, 0, 0); 
     rlDisableVertexArray();
 }
-void Ray2Program::UpdatePoints(int num, Vector2 *points)
+void Ray2Program::UpdateMirrors(LineList &mirrors)
 {
-    rlUpdateShaderBuffer(pointSSBO, points, num*sizeof(Vector2), 0);
-    numPoints = num;
+    rlUpdateShaderBuffer(mirrorSSBO, mirrors.lines.data(), mirrors.lines.size()*sizeof(Vector2), 0);
+    numMirrors = mirrors.lines.size() / 2;
 }
 void Ray2Program::ComputePass()
 {
@@ -50,13 +53,13 @@ void Ray2Program::ComputePass()
     rlEnableShader(computeProgram);
     rlSetUniform(0, &numRays, SHADER_UNIFORM_INT, 1);
     rlSetUniform(1, &numBounces, SHADER_UNIFORM_INT, 1);
-    rlSetUniform(2, &numPoints, SHADER_UNIFORM_INT, 1);
+    rlSetUniform(2, &numMirrors, SHADER_UNIFORM_INT, 1);
     rlSetUniform(3, &arcFocus, SHADER_UNIFORM_FLOAT, 1);
 
     float time = GetTime();
     rlSetUniform(4, &time, SHADER_UNIFORM_FLOAT, 1);
 
-    rlBindShaderBuffer(pointSSBO, 0);
+    rlBindShaderBuffer(mirrorSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);
 
     rlComputeShaderDispatch(numWorkGroups, 1, 1);
@@ -72,8 +75,7 @@ void Ray2Program::RenderPass()
     rlSetUniform(3, &falloff, SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(4, &pointSize, SHADER_UNIFORM_FLOAT, 1);
 
-    rlBindShaderBuffer(pointSSBO, 0);
-    rlBindShaderBuffer(distanceSSBO, 1);
+    rlBindShaderBuffer(distanceSSBO, 0);
 
     // Draw the particles. Instancing will duplicate the vertices.
     rlEnableVertexArray(pointVAO);

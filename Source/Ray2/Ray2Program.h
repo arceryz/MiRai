@@ -2,13 +2,18 @@
 #define RAY2_PROGRAM_H
 
 #include <raylib.h>
+#include "LineList.h"
 
 #define WORKGROUP_SIZE 1024
-#define MAX_POINTS 1000
+#define MAX_MIRRORS 1000
 #define MAX_BOUNCES 16
 #define MAX_WORKGROUPS 500
 #define MAX_RAYS (MAX_WORKGROUPS*WORKGROUP_SIZE)
 #define ARC_FOCUS_INF 1000.0f
+
+typedef int ShaderBuffer;
+typedef int ComputeShader;
+typedef int VertexArray;
 
 // This class represents the 2D mirror raytracer.
 // It handles the compute and rendering part internally
@@ -19,7 +24,7 @@ public:
     int numRays = 0;
     int numBounces = 0;
     Color color = GREEN;
-    float falloff = 0.7;
+    float falloff = 0.7f;
     float pointSize = 1.0;
 
     // If the focus is +-INF, then we have the straight edges.
@@ -28,17 +33,19 @@ public:
     float arcFocus = ARC_FOCUS_INF;
 
     Ray2Program();
-    void UpdatePoints(int num, Vector2 *points);
+    // Update the mirrors as a sequence of line segments.
+    // Does not need to connect!
+    void UpdateMirrors(LineList &mirrors);
     void ComputePass();
     void RenderPass();
 
 private:
-    int pointSSBO = 0;
-    int distanceSSBO = 0;
-    int pointVAO = 0;
-    int computeProgram = 0;
+    ShaderBuffer mirrorSSBO = 0;
+    ShaderBuffer distanceSSBO = 0;
+    VertexArray pointVAO = 0;
+    ComputeShader computeProgram = 0;
     Shader renderProgram = {};
-    int numPoints = 0;
+    int numMirrors = 0;
     int numWorkGroups = 0;
 };
 

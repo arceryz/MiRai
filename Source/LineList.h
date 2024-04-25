@@ -1,5 +1,5 @@
-#ifndef POLYGON
-#define POLYGON
+#ifndef LINELIST_H
+#define LINELIST_H
 
 #include <raylib.h>
 #include <vector>
@@ -9,12 +9,12 @@ using namespace std;
 
 // This class allows loading and generation of polygons and
 // then converting them to appropriate data formats for the Gpu.
-class Polygon
+class LineList
 {
 public:
-    vector<Vector2> points;
-    Polygon();
-    void Generate(int n);
+    vector<Vector2> lines;
+    LineList();
+    void GenerateRegularPolygon(int n);
 };
 
 #endif

@@ -4,10 +4,8 @@
 // This is the vertex attribute set in the code, index 0.
 layout (location=0) in vec2 vertexPosition;
 
-// Two buffers are here.
-// The ray ssbo is packed per bounce, ie numPoints * numBounces.
-layout(std430, binding=0) buffer pointSSBO {  vec2 points[]; };
-layout(std430, binding=1) buffer distanceSSBO { vec2 distances[]; };
+// The distance ssbo is packed per bounce, ie numPoints * numBounces.
+layout(std430, binding=0) buffer distanceSSBO { vec2 distances[]; };
 
 layout(location=0) uniform int numRays;
 layout(location=1) uniform int numBounces;

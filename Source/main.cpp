@@ -1,7 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
-#include "Polygon.h"
+#include "LineList.h"
 #include "Ray2Program.h"
 
 #define RAYGUI_IMPLEMENTATION
@@ -15,13 +15,13 @@ int main()
     InitWindow(800, 800, "Mirai R");
     //SetTargetFPS(144);
 
-    Polygon polygon;
-    polygon.Generate(5);
+    LineList mirrors;
+    mirrors.GenerateRegularPolygon(5);
 
     Ray2Program ray2;
     ray2.numRays = 1024;
     ray2.numBounces = 4;
-    ray2.UpdatePoints(polygon.points.size(), polygon.points.data());
+    ray2.UpdateMirrors(mirrors);
 
     float numRaysFact = 0.5;
     float focusFact = 1.0;
@@ -65,17 +65,17 @@ int main()
         GuiSlider({ ox, oy+80, 100, 10 }, "Falloff", TextFormat("%.2f", ray2.falloff), &ray2.falloff, 0.001, 1);
         GuiSlider({ ox, oy+100, 100, 10 }, "Point Size", TextFormat("%.2f", ray2.pointSize), &ray2.pointSize, 0.3, 3);
 
-        if (polygon.points.size() != shape) {
-            polygon.Generate(shape);
-            ray2.UpdatePoints(polygon.points.size(), polygon.points.data());
+        if (mirrors.lines.size() != 2*shape) {
+            mirrors.GenerateRegularPolygon(shape);
+            ray2.UpdateMirrors(mirrors);
         }
         if (IsKeyPressed(KEY_O)) {
-            polygon.Generate(max(3, (int)polygon.points.size()-1));
-            ray2.UpdatePoints(polygon.points.size(), polygon.points.data());
+            mirrors.GenerateRegularPolygon(max(3, (int)mirrors.lines.size()/2-1));
+            ray2.UpdateMirrors(mirrors);
         }
         if (IsKeyPressed(KEY_P)) {
-            polygon.Generate(polygon.points.size()+1);
-            ray2.UpdatePoints(polygon.points.size(), polygon.points.data());
+            mirrors.GenerateRegularPolygon(max(3, (int)mirrors.lines.size()/2+1));
+            ray2.UpdateMirrors(mirrors);
         }
 
         EndDrawing();

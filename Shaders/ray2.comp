@@ -7,13 +7,13 @@
 layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 // Two buffers are here.
-// The ray ssbo is packed per bounce, ie numPoints * numBounces.
-layout(std430, binding=0) buffer pointSSBO {  vec2 points[]; };
+// The ray ssbo is packed per bounce, ie numRays * numBounces.
+layout(std430, binding=0) buffer mirrorSSBO {  vec2 mirrorPoints[]; };
 layout(std430, binding=1) buffer distanceSSBO { vec2 distances[]; };
 
 layout(location=0) uniform int numRays;
 layout(location=1) uniform int numBounces;
-layout(location=2) uniform int numPoints;
+layout(location=2) uniform int numMirrors;
 layout(location=3) uniform float arcFocus;
 layout(location=4) uniform float time;
 
@@ -44,6 +44,7 @@ void main()
     ray.x = cos(2*PI*prog);
     ray.y = sin(2*PI*prog);
 
+    //vec2 origin = vec2(cos(time*600), sin(time*600))*0.1;
     vec2 origin = vec2(0);
 
     // Trace all bounces and store the distance at each collision.
@@ -55,13 +56,16 @@ void main()
         vec2 vmin = vec2(0);
 
         // Evaluate every mirror plane.
-        for (int j = 0; j < numPoints; j++) {
-            vec2 u = points[j];
-            vec2 v = points[(j+1)%numPoints];
+        for (int j = 0; j < numMirrors; j++) {
+            distances[index*numBounces+i] = vec2(1);
+            vec2 u = mirrorPoints[2*j];
+            vec2 v = mirrorPoints[2*j+1];
+
+            vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+            bool doCurved = abs(arcFocus) < ARC_FOCUS_INF-1;
 
             HitInfo hit;
-            if (abs(arcFocus) < ARC_FOCUS_INF-1) {
-                vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+            if (doCurved) {  
                 vec2 arc = (u+v)/2 + n*arcFocus;
                 float rsq = dot(arc-u, arc-u);
                 hit = RayCircleHit(origin, ray, arc, rsq, arcFocus >= 0);
@@ -70,7 +74,19 @@ void main()
                 hit = RayLineHit(origin, ray, u, v);
             }
             
-            if (hit.t > STEP_MIN && (hitmin.t < 0 || hit.t < hitmin.t)) {
+            // Hit condition: Point must lie between the two points.
+            // The projection of point-u on v-u normalized must be between
+            vec2 uv = v-u;
+            vec2 up = hit.point-u;
+            float pdir = dot(up, uv) / dot(uv, uv);
+            float pnormal = dot(up, n);
+
+            // Validity consists of proper step size. Point lying in between the two edges and
+            // for circles the point must also lie in the proper direction.
+            // focus > 0 then dot < 0, focus < 0 then dot > 0. I.e opposing sign.
+            bool validity = hit.t > STEP_MIN && (0 <= pdir && pdir <= 1) && (pnormal*arcFocus <= 0 || !doCurved);
+
+            if (validity && (hitmin.t < 0 || hit.t < hitmin.t)) {
                 hitmin = hit;
                 umin = u;
                 vmin = v;
