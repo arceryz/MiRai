@@ -77,6 +77,10 @@ int main()
             mirrors.GenerateRegularPolygon(max(3, (int)mirrors.lines.size()/2+1));
             ray2.UpdateMirrors(mirrors);
         }
+        if (IsKeyPressed(KEY_R)) {
+            mirrors.GenerateRandomCirclePolygon(5, 20);
+            ray2.UpdateMirrors(mirrors);
+        }
 
         EndDrawing();
     }

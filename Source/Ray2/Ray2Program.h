@@ -47,6 +47,7 @@ private:
     Shader renderProgram = {};
     int numMirrors = 0;
     int numWorkGroups = 0;
+    Vector2 origin = {};
 };
 
 #endif

@@ -15,6 +15,8 @@ public:
     vector<Vector2> lines;
     LineList();
     void GenerateRegularPolygon(int n);
+    void GenerateRandomCirclePolygon(int n, float minSpacing=0);
+    void LoadLineStrip(vector<Vector2> &strip);
 };
 
 #endif

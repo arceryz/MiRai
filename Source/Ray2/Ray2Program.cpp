@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include "Ray2Program.h"
+#include <raymath.h>
 #include <rlgl.h>
 using namespace std;
 
@@ -43,6 +44,11 @@ void Ray2Program::UpdateMirrors(LineList &mirrors)
 {
     rlUpdateShaderBuffer(mirrorSSBO, mirrors.lines.data(), mirrors.lines.size()*sizeof(Vector2), 0);
     numMirrors = mirrors.lines.size() / 2;
+    Vector2 sum = { 0, 0 };
+    for (Vector2 point: mirrors.lines) {
+        sum = Vector2Add(sum, point);
+    }
+    origin = Vector2Scale(sum, 1.0/mirrors.lines.size());
 }
 void Ray2Program::ComputePass()
 {
@@ -58,6 +64,7 @@ void Ray2Program::ComputePass()
 
     float time = GetTime();
     rlSetUniform(4, &time, SHADER_UNIFORM_FLOAT, 1);
+    rlSetUniform(5, &origin, SHADER_UNIFORM_VEC2, 1);
 
     rlBindShaderBuffer(mirrorSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);
