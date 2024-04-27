@@ -1,4 +1,4 @@
-#include "LineList.h"
+#include "Ray2Scene.h"
 #include <raymath.h>
 #include <algorithm>
 
@@ -6,16 +6,20 @@ float GetRandomFloat(float from, float to) {
     return from + (to-from)*(float)GetRandomValue(0, INT_MAX) / INT_MAX;
 }
 
-LineList::LineList()
+Ray2Scene::Ray2Scene()
 {
 
 }
-
-void LineList::GenerateRegularPolygon(int n)
+void Ray2Scene::Clear()
 {
-    lines.clear();
-    lines.resize(2*n);
-
+    mirrors.clear();
+    numMirrors = 0;
+    dirty = true;
+}
+void Ray2Scene::GenerateRegularPolygon(int n)
+{
+    Clear();
+    
     // First generate the points. We always generate clockwise order.
     vector<Vector2> verts;
     verts.resize(n);
@@ -24,10 +28,12 @@ void LineList::GenerateRegularPolygon(int n)
         Vector2 point = { (float)cos(angle), (float)sin(angle) };
         verts[i] = point;
     }
-    LoadLineStrip(verts);
+    AddMirrorStrip(verts);
 }
-void LineList::GenerateRandomCirclePolygon(int n, float minSpacing)
+void Ray2Scene::GenerateRandomCirclePolygon(int n, float minSpacing)
 {
+    Clear();
+
     // Generate random angles.
     vector<float> angles;
     angles.resize(n);
@@ -48,22 +54,20 @@ void LineList::GenerateRandomCirclePolygon(int n, float minSpacing)
     // Create the points.
     vector<Vector2> points;
     for (int i = 0; i < n; i++) {
-        printf("%f\n", angles[i]);
         float a = DEG2RAD * angles[i];
         Vector2 vec = { cos(a), sin(a) };
         points.push_back(vec);
     }
-    LoadLineStrip(points);
+    AddMirrorStrip(points);
 }
-void LineList::LoadLineStrip(vector<Vector2> &strip)
+void Ray2Scene::AddMirrorStrip(vector<Vector2> &strip)
 {
-    int n = strip.size();
-    lines.clear();
-    lines.resize(2*n);
-
     // Make line segments.
-    for (int i = 0; i < strip.size(); i++) {
-        lines[2*i] = strip[i];
-        lines[2*i+1] = strip[(i+1)%n];
+    int n = strip.size();
+    numMirrors += n;
+    for (int i = 0; i < n; i++) {
+        mirrors.push_back(strip[i]);
+        mirrors.push_back(strip[(i+1)%n]);
     }
+    dirty = true;
 }

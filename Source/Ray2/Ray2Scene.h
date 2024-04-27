@@ -1,5 +1,5 @@
-#ifndef LINELIST_H
-#define LINELIST_H
+#ifndef RAY2SCENE_H
+#define RAY2SCENE_H
 
 #include <raylib.h>
 #include <vector>
@@ -9,14 +9,18 @@ using namespace std;
 
 // This class allows loading and generation of polygons and
 // then converting them to appropriate data formats for the Gpu.
-class LineList
+class Ray2Scene
 {
+private:
 public:
-    vector<Vector2> lines;
-    LineList();
+    vector<Vector2> mirrors;
+    int numMirrors;
+    bool dirty = false;
+    Ray2Scene();
     void GenerateRegularPolygon(int n);
     void GenerateRandomCirclePolygon(int n, float minSpacing=0);
-    void LoadLineStrip(vector<Vector2> &strip);
+    void Clear();
+    void AddMirrorStrip(vector<Vector2> &strip);
 };
 
 #endif

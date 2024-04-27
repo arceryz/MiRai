@@ -2,7 +2,7 @@
 #define RAY2_PROGRAM_H
 
 #include <raylib.h>
-#include "LineList.h"
+#include "Ray2Scene.h"
 
 #define WORKGROUP_SIZE 1024
 #define MAX_MIRRORS 1000
@@ -32,10 +32,10 @@ public:
     // If the focus is negative, we enter hyperbolic space.
     float arcFocus = ARC_FOCUS_INF;
 
-    Ray2Program();
+    Ray2Program(Ray2Scene &_scene);
     // Update the mirrors as a sequence of line segments.
     // Does not need to connect!
-    void UpdateMirrors(LineList &mirrors);
+    void UpdateScene(bool center=true);
     void ComputePass();
     void RenderPass();
 
@@ -45,9 +45,9 @@ private:
     VertexArray pointVAO = 0;
     ComputeShader computeProgram = 0;
     Shader renderProgram = {};
-    int numMirrors = 0;
     int numWorkGroups = 0;
     Vector2 origin = {};
+    Ray2Scene &scene;
 };
 
 #endif

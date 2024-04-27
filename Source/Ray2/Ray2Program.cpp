@@ -5,7 +5,8 @@
 #include <rlgl.h>
 using namespace std;
 
-Ray2Program::Ray2Program()
+Ray2Program::Ray2Program(Ray2Scene &_scene)
+: scene(_scene)
 {
     renderProgram = LoadShader("Shaders/ray2.vert", "Shaders/ray2.frag");
     
@@ -40,18 +41,23 @@ Ray2Program::Ray2Program()
     rlSetVertexAttribute(0, 2, RL_FLOAT, false, 0, 0); 
     rlDisableVertexArray();
 }
-void Ray2Program::UpdateMirrors(LineList &mirrors)
+void Ray2Program::UpdateScene(bool center)
 {
-    rlUpdateShaderBuffer(mirrorSSBO, mirrors.lines.data(), mirrors.lines.size()*sizeof(Vector2), 0);
-    numMirrors = mirrors.lines.size() / 2;
-    Vector2 sum = { 0, 0 };
-    for (Vector2 point: mirrors.lines) {
-        sum = Vector2Add(sum, point);
+    rlUpdateShaderBuffer(mirrorSSBO, scene.mirrors.data(), scene.mirrors.size()*sizeof(Vector2), 0);
+    if (center) {
+        Vector2 sum = { 0, 0 };
+        for (Vector2 point: scene.mirrors) {
+            sum = Vector2Add(sum, point);
+        }
+        origin = Vector2Scale(sum, 1.0/scene.mirrors.size());
     }
-    origin = Vector2Scale(sum, 1.0/mirrors.lines.size());
 }
 void Ray2Program::ComputePass()
 {
+    if (scene.dirty) {
+        UpdateScene(true);
+        scene.dirty = false;
+    }
     numBounces = min(numBounces, MAX_BOUNCES);
     numRays = min(numRays, MAX_RAYS);
     numWorkGroups = numRays / 1024 + 1;
@@ -59,7 +65,7 @@ void Ray2Program::ComputePass()
     rlEnableShader(computeProgram);
     rlSetUniform(0, &numRays, SHADER_UNIFORM_INT, 1);
     rlSetUniform(1, &numBounces, SHADER_UNIFORM_INT, 1);
-    rlSetUniform(2, &numMirrors, SHADER_UNIFORM_INT, 1);
+    rlSetUniform(2, &scene.numMirrors, SHADER_UNIFORM_INT, 1);
     rlSetUniform(3, &arcFocus, SHADER_UNIFORM_FLOAT, 1);
 
     float time = GetTime();

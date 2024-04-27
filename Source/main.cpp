@@ -1,7 +1,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
-#include "LineList.h"
+#include "Ray2Scene.h"
 #include "Ray2Program.h"
 
 #define RAYGUI_IMPLEMENTATION
@@ -15,18 +15,18 @@ int main()
     InitWindow(800, 800, "Mirai R");
     //SetTargetFPS(144);
 
-    LineList mirrors;
-    mirrors.GenerateRegularPolygon(5);
+    Ray2Scene scene;
+    scene.GenerateRegularPolygon(5);
 
-    Ray2Program ray2;
+    Ray2Program ray2(scene);
     ray2.numRays = 1024;
     ray2.numBounces = 4;
-    ray2.UpdateMirrors(mirrors);
 
     float numRaysFact = 0.5;
     float focusFact = 1.0;
     bool hyperbolic = false;
     int shape = 5;
+    int currentShape = 5;
     Vector3 color = { 1.0, 1.0, 1.0 };
 
     Camera2D camera = {};
@@ -65,21 +65,12 @@ int main()
         GuiSlider({ ox, oy+80, 100, 10 }, "Falloff", TextFormat("%.2f", ray2.falloff), &ray2.falloff, 0.001, 1);
         GuiSlider({ ox, oy+100, 100, 10 }, "Point Size", TextFormat("%.2f", ray2.pointSize), &ray2.pointSize, 0.3, 3);
 
-        if (mirrors.lines.size() != 2*shape) {
-            mirrors.GenerateRegularPolygon(shape);
-            ray2.UpdateMirrors(mirrors);
-        }
-        if (IsKeyPressed(KEY_O)) {
-            mirrors.GenerateRegularPolygon(max(3, (int)mirrors.lines.size()/2-1));
-            ray2.UpdateMirrors(mirrors);
-        }
-        if (IsKeyPressed(KEY_P)) {
-            mirrors.GenerateRegularPolygon(max(3, (int)mirrors.lines.size()/2+1));
-            ray2.UpdateMirrors(mirrors);
+        if (currentShape != shape) {
+            currentShape = shape;
+            scene.GenerateRegularPolygon(shape);
         }
         if (IsKeyPressed(KEY_R)) {
-            mirrors.GenerateRandomCirclePolygon(5, 20);
-            ray2.UpdateMirrors(mirrors);
+            scene.GenerateRandomCirclePolygon(5, 20);
         }
 
         EndDrawing();
