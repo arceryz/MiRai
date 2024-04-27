@@ -2,6 +2,7 @@
 #define RAY3_PROGRAM_H
 
 #include <raylib.h>
+#include "Ray3Scene.h"
 
 // This class represents the 3D mirror raytracer.
 // It does not use compute shaders and is implemented purely with
@@ -16,11 +17,12 @@ public:
 
     float arcFocus = 1000.0f;
 
-    Ray3Program();
+    Ray3Program(Ray3Scene &_scene);
     void UpdatePoints(int num, Vector2 *points);
     void RenderPass();
 
 private:
+    Ray3Scene &scene;
     Shader renderProgram = {};
     int numPoints = 0;
 };

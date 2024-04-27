@@ -2,6 +2,7 @@
 #include <raymath.h>
 #include <rlgl.h>
 #include "Ray2.h"
+#include "Ray3.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
@@ -13,12 +14,13 @@ int main()
 {
     InitWindow(800, 800, "Mirai R");
     Ray2 ray2;
+    Ray3 ray3;
     
     while(!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(BLACK); 
 
-        ray2.Draw();
+        ray3.Draw();
 
         EndDrawing();
     }

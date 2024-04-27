@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(raylib)
 include_directories(Source/Ray3)
 include_directories(Source/Ray2)
 include_directories(Source)
-include_directories(_deps/raylib-src/src/)
+include_directories(build/_deps/raylib-src/src)
 file(GLOB SOURCES Source/*.cpp Source/Ray2/*.cpp Source/Ray3/*.cpp)
 
 add_executable(Mirai ${SOURCES})
