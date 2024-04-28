@@ -21,17 +21,24 @@ public:
         camera.target = { 0, 0, 0 };
         camera.up = { 0, 1, 0 };
         camera.projection = CAMERA_PERSPECTIVE;
-        model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
+        model = LoadModel("Models/Dodecahedron.obj");
         shader = LoadShader("Shaders/ray3.vert", "Shaders/ray3.frag");
         model.materials[0].shader = shader;
-        scene.AddModel(model);
+        scene.AddMirrorModel(model, true);
     }
     void Draw()
     {
         BeginMode3D(camera);
-        //DrawModelWires(model, { 0, 0, 0 }, 0.3, BLUE);
-        scene.DrawFaces(BLUE, GREEN);
-        //scene.DebugDrawMesh(model.meshes[0]);
+        vector<Color> colors = {
+            RED,
+            GREEN,
+            BLUE,
+            ORANGE,
+            MAGENTA,
+            GRAY
+        };
+        scene.DrawMirrors(colors, 0.9);
+
         UpdateCamera(&camera, CAMERA_ORBITAL);
         EndMode3D();
     }

@@ -3,25 +3,19 @@
 
 #include <raylib.h>
 #include <vector>
+#include "TriangleNet.h"
 using namespace std;
-
-struct Face {
-    vector<Vector3> vertices;
-    Vector3 center;
-    Vector3 normal;
-
-    void ComputeCenter();
-};
 
 class Ray3Scene
 {
-    vector<Face> faces;
+private:
+    vector<Polygon> mirrors;
 public:
     Ray3Scene();
-    void AddModel(Model model);
-    void AddMesh(Mesh mesh);
+    void AddMirrorModel(Model model, bool flipNormals);
+    void AddMirrorMesh(Mesh mesh, bool flipNormals);
     void DebugDrawMesh(Mesh mesh);
-    void DrawFaces(Color color, Color normalColor);
+    void DrawMirrors(vector<Color> colors, float faceScale=1.0f);
 };
 
 #endif

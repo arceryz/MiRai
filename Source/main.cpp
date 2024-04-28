@@ -15,13 +15,16 @@ int main()
     InitWindow(800, 800, "Mirai R");
     Ray2 ray2;
     Ray3 ray3;
+    bool mode3D = true;
     
     while(!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(BLACK); 
 
-        ray3.Draw();
+        if (mode3D) ray3.Draw();
+        else ray2.Draw();
 
+        if (GuiButton({ 10, 770, 40, 20 }, TextFormat("%s", mode3D? "3D": "2D"))) mode3D = !mode3D;
         EndDrawing();
     }
 }
