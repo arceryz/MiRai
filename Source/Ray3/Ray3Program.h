@@ -14,15 +14,16 @@ class Ray3Program
 public:
     int numBounces = 0;
     Color color = GREEN;
-
+    Model model;
     float arcFocus = 1000.0f;
 
-    Ray3Program(Ray3Scene &_scene);
+    Ray3Program();
+    void SetScene(Ray3Scene *_scene);
     void UpdatePoints(int num, Vector2 *points);
-    void RenderPass();
-
+    void Draw();
 private:
-    Ray3Scene &scene;
+    Shader shader;
+    Ray3Scene *scene;
     Shader renderProgram = {};
     int numPoints = 0;
 };

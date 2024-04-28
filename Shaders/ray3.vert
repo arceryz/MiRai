@@ -9,18 +9,15 @@ in vec4 vertexColor;
 // Input uniform values
 uniform mat4 mvp;
 
-// Output vertex attributes (to fragment shader)
-out vec2 fragTexCoord;
-out vec4 fragColor;
-
-// NOTE: Add here your custom variables
+out vec3 viewRay;
 
 void main()
 {
-    // Send vertex attributes to fragment shader
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
+    // Compute clip coordinates and turn these to NDC coordinates.
+    // The NDC coordinates range from 0 to 1.
+    vec4 clip = mvp*vec4(vertexPosition, 1.0);
+    vec3 ndc = clip.xyz / clip.w;
+    viewRay = vec3((ndc.x+1)/2, (ndc.y+1)/2, 0);
 
-    // Calculate final vertex position
-    gl_Position = mvp*vec4(vertexPosition, 1.0);
+    gl_Position = clip;
 }

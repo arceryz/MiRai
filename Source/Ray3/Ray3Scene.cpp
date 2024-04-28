@@ -20,8 +20,6 @@ void Ray3Scene::AddMirrorMesh(Mesh mesh, bool flipNormals)
     vector<Vector3> normals;
     vertices.resize(vertexCount);
     normals.resize(vertexCount);
-
-    // Flatten everything to plain lists.
     for (int i = 0; i < vertexCount; i++) {
         int index = mesh.indices != NULL ? mesh.indices[i]: i;
         vertices[i] = ((Vector3*)mesh.vertices)[index];
@@ -31,7 +29,6 @@ void Ray3Scene::AddMirrorMesh(Mesh mesh, bool flipNormals)
     // This map partitions all triangles by colinearity.
     // Using the inner product <n, x> = CONST and normal as string keys.
     unordered_map<string, vector<int>> triangleSets;
-
     for (int i = 0; i < vertexCount; i += 3) {
         Vector3 normal = normals[i];
         float dotp = Vector3DotProduct(normal, vertices[i]);
@@ -45,23 +42,15 @@ void Ray3Scene::AddMirrorMesh(Mesh mesh, bool flipNormals)
         tris.push_back(i+2);
     }
 
-    // For each set of colinear triangles we create a triangle net and
-    // extract the polygons from it.
     for (auto kv: triangleSets) {
-        // Form the triangle net.
         vector<Vector3> triangles;
-        for (int i: kv.second) {
-            triangles.push_back(vertices[i]);
-        }
-        TriangleNet net;
-        net.AddTriangles(triangles);
-        vector<Polygon> list = net.GetPolygons();
-        for (Polygon &poly: list) {
+        for (int i: kv.second) triangles.push_back(vertices[i]);
+        vector<Polygon> polygons = Polygon::FromTriangles(triangles);
+        for (Polygon &poly: polygons) {
             poly.normal = Vector3Scale(normals[kv.second[0]], flipNormals ? -1: 1);
         }
-
-        printf("Subnet consists of %d polygons\n", list.size());
-        mirrors.insert(mirrors.end(), list.begin(), list.end());
+        printf("Subnet consists of %d polygons\n", polygons.size());
+        mirrors.insert(mirrors.end(), polygons.begin(), polygons.end());
     }
     printf("Extracted %d mirrors\n", mirrors.size());
 }

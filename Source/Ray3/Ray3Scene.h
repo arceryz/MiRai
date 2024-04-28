@@ -3,7 +3,7 @@
 
 #include <raylib.h>
 #include <vector>
-#include "TriangleNet.h"
+#include "Polygon.h"
 using namespace std;
 
 class Ray3Scene
@@ -11,6 +11,7 @@ class Ray3Scene
 private:
     vector<Polygon> mirrors;
 public:
+    string name = "Unnamed Scene";
     Ray3Scene();
     void AddMirrorModel(Model model, bool flipNormals);
     void AddMirrorMesh(Mesh mesh, bool flipNormals);
