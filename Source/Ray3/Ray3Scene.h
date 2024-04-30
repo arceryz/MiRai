@@ -17,6 +17,12 @@ public:
     void AddMirrorMesh(Mesh mesh, bool flipNormals);
     void DebugDrawMesh(Mesh mesh);
     void DrawMirrors(vector<Color> colors, float faceScale=1.0f);
+
+    // Packing functions.
+    vector<Vector4> GetMirrorVerticesPacked();
+    vector<Vector4> GetMirrorNormalsPacked();
+    vector<int> GetMirrorSizesPacked();
+    int GetNumMirrors();
 };
 
 #endif

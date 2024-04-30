@@ -4,6 +4,8 @@
 #include <raylib.h>
 #include "Ray3Scene.h"
 
+typedef int ShaderBuffer;
+
 // This class represents the 3D mirror raytracer.
 // It does not use compute shaders and is implemented purely with
 // fragment shaders.
@@ -12,6 +14,7 @@
 class Ray3Program
 {
 public:
+    int numMirrors = 0;
     int numBounces = 0;
     Color color = GREEN;
     Model model;
@@ -23,9 +26,11 @@ public:
     void Draw();
 private:
     Shader shader;
+    ShaderBuffer mirrorVertexBuffer;
+    ShaderBuffer mirrorNormalBuffer;
+    ShaderBuffer mirrorSizeBuffer;
     Ray3Scene *scene;
     Shader renderProgram = {};
-    int numPoints = 0;
 };
 
 #endif

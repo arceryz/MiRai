@@ -24,6 +24,7 @@ public:
         scene.name = "Cube";
         scene.AddMirrorModel(model, true);
         program.model = model;
+        program.SetScene(&scene);
     }
     void Draw()
     {
@@ -36,11 +37,14 @@ public:
             MAGENTA,
             GRAY
         };
-        scene.DrawMirrors(colors, 0.9);
-        //program.Draw();
+        //scene.DrawMirrors(colors, 0.9);
+        DrawGrid(4, 1.0f);
+        program.Draw();
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
         EndMode3D();
+
+        DrawFPS(10, 10);
     }
 };
 

@@ -74,3 +74,34 @@ void Ray3Scene::DrawMirrors(vector<Color> colors, float faceScale)
         mirrors[i].Draw(color, color, faceScale);
     }
 }
+vector<Vector4> Ray3Scene::GetMirrorVerticesPacked()
+{
+    vector<Vector4> vertices;
+    for (Polygon poly: mirrors) {
+        for (Vector3 vertex: poly.vertices) {
+            // TODO: Use this free data for something cool.
+            vertices.push_back({ vertex.x, vertex.y, vertex.z, 0 });
+        }
+    }
+    return vertices;
+}
+vector<Vector4> Ray3Scene::GetMirrorNormalsPacked()
+{
+    vector<Vector4> normals;
+    for (Polygon poly: mirrors) {
+        normals.push_back({ poly.normal.x, poly.normal.y, poly.normal.z, 0 });
+    }
+    return normals;
+}
+vector<int> Ray3Scene::GetMirrorSizesPacked()
+{
+    vector<int> sizes;
+    for (Polygon poly: mirrors) {
+        sizes.push_back(poly.vertices.size());
+    }
+    return sizes;
+}
+int Ray3Scene::GetNumMirrors()
+{
+    return mirrors.size();
+}

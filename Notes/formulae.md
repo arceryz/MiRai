@@ -4,10 +4,10 @@ Timothy van der Valk
 
 ---
 
-## 1. Ray-Line Intersection
-In this case we have an origin point $\vec{o}$ and a direction $\vec{d}$. We compute the intersection point given by a line segment between $\vec{u}$ and $\vec{v}$.
+## 1. Ray-Surface Intersection
+We wish to compute the intersection of our ray with a surface specified by a single normal. This surface always has $n-1$ dimensions from the space it exists in. In the case of $n=2$ we have a line segment. In $n=3$ we have a plane.
 
-Our ray and line are given by the following two equations.
+Our ray and surface are given by the following two equations. Here $\vec{u}$ is a point on the target surface.
 $$
 \begin{aligned}
 (1) \quad& \vec{x} = \vec{o} + t\vec{d} \\
@@ -15,7 +15,7 @@ $$
 \end{aligned}
 $$
 
-Then combining these two and simplify the expression of inproducts results in the formula for $t$ that intersects the line, given that they are not parallel.
+Then combining these two and simplify the expression of inproducts results in the formula for $t$ that intersects the surface, given that the ray is not parallel to the surface.
 $$
 \begin{aligned}
 \langle\vec{n}, \vec{o}+t\vec{d}\rangle=\langle\vec{n}, \vec{o}\rangle + t\langle\vec{n}, \vec{d}\rangle&=\langle\vec{n}, \vec{u}\rangle \\
@@ -23,7 +23,7 @@ t = \frac{\langle\vec{n}, \vec{u}-\vec{o}\rangle}{\langle\vec{n}, \vec{d}\rangle
 \end{aligned}
 $$
 
-From this formula it is clear that the $\vec{n}$ and $\vec{d}$ may not be perpendicular to each other, since then the direction $\vec{d}$ is parallel to the line segment, which yields no intersection.
+From this formula it is clear that the $\vec{n}$ and $\vec{d}$ may not be perpendicular to each other, since then the direction $\vec{d}$ is parallel to the surface, which yields no intersection.
 
 This formula extends to higher dimensions since it uses the simple and elegant language of inner products.
 
