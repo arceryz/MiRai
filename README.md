@@ -7,11 +7,9 @@
 
 The purpose of this project is to analyse the patterns from mirror reflections in scenes with lines and planes in 2D and 3D, with an extension to convex and concave curved mirrors. This tool is part of my Bachelor's Thesis.
 
-*You can get raygui.h [here](https://github.com/raysan5/raygui/blob/master/src/raygui.h)*
+*This program requires raylib to be compiled with `GRAPHIC_API=GRAPHICS_API_OPENGL_43`, otherwise you won't be able to use compute shaders.*
 
 ---
-
-This program requires raylib to be compiled with `GRAPHIC_API=GRAPHICS_API_OPENGL_43`, otherwise you won't be able to use compute shaders. 
 
 This mirror raytracer works with scenes that are described by 2D lines or 3D polygons. Rays will be cast from the view point and in 2D the resulting image points are drawn.
 
