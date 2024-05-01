@@ -46,5 +46,7 @@ void Ray3Program::Draw()
     // The model uses the same shader, but we use the Raylib method
     // of drawing models since it is easiest.
     model.materials->shader = shader;
+    rlSetCullFace(RL_CULL_FACE_FRONT);
     DrawModel(model, {}, 1, WHITE);
+    rlSetCullFace(RL_CULL_FACE_BACK);
 }

@@ -1,10 +1,5 @@
 #version 430
 
-// Input vertex attributes (from vertex shader)
-in vec3 rayVector;
-in vec3 rayOrigin;
-in vec2 ndcCoord;
-
 // Output fragment color
 out vec4 finalColor;
 
@@ -15,6 +10,9 @@ layout(std430, binding=1) buffer ssbo1 { vec4 normals[]; };
 layout(std430, binding=2) buffer ssbo2 { int sizes[]; };
 
 layout(location=0) uniform int numMirrors;
+uniform mat4 mvp;
+
+const float STEP_MIN = 0.001f;
 
 struct HitInfo {
     float t;
@@ -32,18 +30,25 @@ float DistanceSq(vec3 a, vec3 b);
 
 void main()
 {
-    vec3 col = vec3(0.1);
+    // Compute the necessary ray data in view space.
+    // We can't do this in vertex space due to projection.
+    mat4 invViewProj = inverse(mvp);
+    vec2 ndc = 2*gl_FragCoord.xy / 800 - 1;
+    vec4 originHom = invViewProj*vec4(ndc.xy, -1, 1);
+    vec4 dirHom = invViewProj*vec4(ndc.xy, 1, 1);
+    vec3 dirWorld = dirHom.xyz / dirHom.w;
+    vec3 rayOrigin = originHom.xyz / originHom.w;
+    vec3 rayDir = normalize(dirWorld-rayOrigin);
 
-    // Normalizing is very important since the vertex shader does
-    // not interpolate with unit length!
-    vec3 rayDir = normalize(rayVector);
+    vec3 col = vec3(0);
 
     // Iterate all mirrors and keep track of individual
     // mirror offset indices in the main vertex buffer.
-    for (int b = 0; b < 1; b++) {
+    for (int b = 0; b < 8; b++) {
         int offset = 0;
         int mirrorIndex = 0;
         int mirrorOffset = 0;
+        int mirrorSize = 0;
         HitInfo mirrorHit;
         mirrorHit.t = -1;
 
@@ -53,26 +58,37 @@ void main()
             vec3 normal = normals[i].xyz;
             vec3 surfacePoint = vertices[offset].xyz;
             HitInfo hit = RayPlaneHit(rayOrigin, rayDir, normal, surfacePoint);
-            if ((mirrorHit.t < 0 || hit.t < mirrorHit.t) && dot(normal, rayDir) < 0) {
+
+            bool validity = dot(normal, rayDir) < 0 && hit.t > STEP_MIN;
+            bool optimality = mirrorHit.t < 0 || hit.t < mirrorHit.t;
+            if (optimality && validity) {
                 mirrorHit = hit;
                 mirrorIndex = i;
                 mirrorOffset = offset;
+                mirrorSize = size;
             }
             offset += size;
         }
 
-        col = vec3(distance(-mirrorHit.normal, mirrorHit.point));
+        if (mirrorHit.t < 0)
+            break;
 
-    // for (int j = 0; j < size; j++) {
-        //     vec3 u = vertices[index+j].xyz;
-        //     vec3 v = vertices[index+(j+1)%size].xyz;
-        //     float r = 0.1;
-        //     //HitInfo hit = RaySphereHit(rayOrigin, rayDir, u, r*r, true);
-        //     LineProjection lp = PointLineProject(planeHit.point, u, v);
-        //     bool bounds = 0 <= lp.utov && lp.utov <= 1;
-        //     if (length(lp.projection - planeHit.point) < 0.05 && bounds) {
-        //         col = vec3(1, 0, 0);
-        //     }
+        // Test collision with an edge.
+        bool hasHit = false;
+        for (int j = 0; j < mirrorSize; j++) {
+            vec3 u = vertices[mirrorOffset+j].xyz;
+            vec3 v = vertices[mirrorOffset+(j+1)%mirrorSize].xyz;
+            LineProjection lp = PointLineProject(mirrorHit.point, u, v);
+            bool bounds = 0 <= lp.utov && lp.utov <= 1;
+            if (DistanceSq(lp.projection, mirrorHit.point) < 0.001 && bounds) {
+                col = vec3(0, 1.0/float(b+1), 0);
+                hasHit = true;
+            }
+        }
+        if (hasHit) break;
+
+        rayDir = reflect(rayDir, mirrorHit.normal);
+        rayOrigin = mirrorHit.point;
     }
     
     finalColor = vec4(col, 1);
@@ -94,6 +110,9 @@ HitInfo RaySphereHit(vec3 o, vec3 d, vec3 cc, float rsq, bool convex)
     float t1 = (-b - sqrtD) / (2*a);
     float t2 = (-b + sqrtD) / (2*a);
 
+    // Convex means that we take the last collision point, which relative
+    // to the ray is a convex curve. This is default spherical.
+    // Hyperbolic is not convex but arched toward the ray so concave.
     float t = float(convex)*max(t1, t2) + (1-float(convex))*min(t1, t2);
 
     HitInfo hit;

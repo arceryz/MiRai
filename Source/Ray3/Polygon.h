@@ -17,7 +17,7 @@ public:
     static vector<Polygon> FromTriangles(vector<Vector3> triangles);
     Polygon();
     void ComputeCenter();
-    void Draw(Color color, Color normalColor, float faceScale, int numEdges=-1);
+    void Draw(Color color, Color normalColor, float scale, float faceScale, int numEdges=-1);
 };
 
 #endif

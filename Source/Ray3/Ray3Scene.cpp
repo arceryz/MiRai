@@ -67,11 +67,11 @@ void Ray3Scene::DebugDrawMesh(Mesh mesh)
         DrawLine3D(v, n, GREEN);
     }
 }
-void Ray3Scene::DrawMirrors(vector<Color> colors, float faceScale)
+void Ray3Scene::DrawMirrors(vector<Color> colors, float scale, float faceScale)
 {
     for (int i = 0; i < mirrors.size(); i++) {
         Color color = colors[i%colors.size()];
-        mirrors[i].Draw(color, color, faceScale);
+        mirrors[i].Draw(color, color, scale, faceScale);
     }
 }
 vector<Vector4> Ray3Scene::GetMirrorVerticesPacked()

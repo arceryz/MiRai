@@ -65,13 +65,14 @@ void Polygon::ComputeCenter()
     }
     center = Vector3Scale(sum, 1.0/vertices.size());
 }
-void Polygon::Draw(Color color, Color normalColor, float faceScale, int numEdges)
+void Polygon::Draw(Color color, Color normalColor, float scale, float faceScale, int numEdges)
 {
     // This matrix centers to origin, scales and then centers back.
     // A localized scaling around the center of the polygon.
     Matrix transform = MatrixTranslate(-center.x, -center.y, -center.z);
     transform = MatrixMultiply(transform, MatrixScale(faceScale, faceScale, faceScale));
     transform = MatrixMultiply(transform, MatrixTranslate(center.x, center.y, center.z));
+    transform = MatrixMultiply(transform, MatrixScale(scale, scale, scale));
 
     if (numEdges < 0) {
         numEdges = vertices.size();
