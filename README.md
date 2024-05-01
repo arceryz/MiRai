@@ -1,4 +1,4 @@
-# Mirai Mirror Simulator
+# Mirai 2D/3D Flat/Curved Mirror Simulator
 
 <img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo3d.gif" width="288px">
 <img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo2d.gif" width="288px">
