@@ -1,9 +1,13 @@
-# Mirai
+# Mirai Mirror Simulator
 
-Mirai is a W.I.P tool for my Bachelor's Thesis that computes mirror reflections in 2D and 3D of straight and curved mirror's. It then draws the image points in world space to observe alignment of mirror patterns in both 2D and 3D.
+<img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo3d.gif" width="288px">
+<img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo.gif2d" width="288px">
 
-Features
-- [x] 2D (Mirai 1.0) mirror visualiser.
-- [ ] 3D mirror visualiser.
-- [x] Enhanced user interface.
-- [x] Fancy rendering options.
+**A 2D + 3D mirror box visualiser on the GPU**.
+
+The purpose of this project is to analyse the patterns from mirror reflections in scenes with lines and planes in 2D and 3D, with an extension to convex and concave curved mirrors. This tool is part of my Bachelor's Thesis.
+
+*You can get raygui.h [here](https://github.com/raysan5/raygui/blob/master/src/raygui.h)*
+
+---
+This program requires raylib to be compiled with `GRAPHIC_API=GRAPHICS_API_OPENGL_43`, otherwise you won't be able to use compute shaders.

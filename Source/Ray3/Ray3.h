@@ -40,7 +40,7 @@ public:
         scene.DrawMirrors(colors, 0.99, 0.95);
         program.Draw();
         rlSetCullFace(RL_CULL_FACE_FRONT);
-        DrawSphereEx({}, 1.0f, 32, 32, Fade(RED, 0.3f));
+        //DrawSphereEx({}, 1.0f, 32, 32, Fade(RED, 0.3f));
         rlSetCullFace(RL_CULL_FACE_BACK);
 
         UpdateCamera(&camera, CAMERA_ORBITAL);
