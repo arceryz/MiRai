@@ -1,7 +1,7 @@
 # Mirai Mirror Simulator
 
 <img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo3d.gif" width="288px">
-<img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo.gif2d" width="288px">
+<img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo2d.gif" width="288px">
 
 **A 2D + 3D mirror box visualiser on the GPU**.
 
