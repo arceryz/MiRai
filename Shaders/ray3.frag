@@ -10,6 +10,7 @@ layout(std430, binding=1) buffer ssbo1 { vec4 normals[]; };
 layout(std430, binding=2) buffer ssbo2 { int sizes[]; };
 
 layout(location=0) uniform int numMirrors;
+layout(location=1) uniform float edgeThickness;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -44,7 +45,7 @@ void main()
 
     // Iterate all mirrors and keep track of individual
     // mirror offset indices in the main vertex buffer.
-    for (int b = 0; b < 8; b++) {
+    for (int b = 0; b < 16; b++) {
         int offset = 0;
         int mirrorIndex = 0;
         int mirrorOffset = 0;
@@ -80,8 +81,10 @@ void main()
             vec3 v = vertices[mirrorOffset+(j+1)%mirrorSize].xyz;
             LineProjection lp = PointLineProject(mirrorHit.point, u, v);
             bool bounds = 0 <= lp.utov && lp.utov <= 1;
-            if (DistanceSq(lp.projection, mirrorHit.point) < 0.001 && bounds) {
-                col = vec3(0, 1.0/float(b+1), 0);
+            float ds = DistanceSq(lp.projection, mirrorHit.point);
+            if (ds < edgeThickness && bounds) {
+
+                col = vec3(0, (1-0.5*ds/edgeThickness)*pow(0.85, float(b+1)), 0);
                 hasHit = true;
             }
         }

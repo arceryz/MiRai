@@ -19,6 +19,7 @@ public:
     Color color = GREEN;
     Model model;
     float arcFocus = 1000.0f;
+    float edgeThickness = 1.0f;
 
     Ray3Program();
     void SetScene(Ray3Scene *_scene);

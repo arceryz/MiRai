@@ -13,6 +13,7 @@
 int main()
 {
     InitWindow(800, 800, "Mirai R");
+    SetConfigFlags(FLAG_VSYNC_HINT);
     Ray2 ray2;
     Ray3 ray3;
     bool mode3D = true;

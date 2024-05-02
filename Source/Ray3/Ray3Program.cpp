@@ -42,6 +42,8 @@ void Ray3Program::Draw()
     rlBindShaderBuffer(mirrorNormalBuffer, 1);
     rlBindShaderBuffer(mirrorSizeBuffer, 2);
     SetShaderValue(shader, 0, &numMirrors, SHADER_UNIFORM_INT);
+    float edgeThick = 0.001f*edgeThickness;
+    SetShaderValue(shader, 1, &edgeThick, SHADER_UNIFORM_FLOAT);
 
     // The model uses the same shader, but we use the Raylib method
     // of drawing models since it is easiest.
