@@ -11,6 +11,7 @@ layout(std430, binding=2) buffer ssbo2 { int sizes[]; };
 
 layout(location=0) uniform int numMirrors;
 layout(location=1) uniform float edgeThickness;
+layout(location=2) uniform mat4 invMvp;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -32,11 +33,10 @@ float DistanceSq(vec3 a, vec3 b);
 void main()
 {
     // Compute the necessary ray data in view space.
-    // We can't do this in vertex space due to projection.
-    mat4 invViewProj = inverse(mvp);
+    // We can't do this in vertex space due to projection.;
     vec2 ndc = 2*gl_FragCoord.xy / 800 - 1;
-    vec4 originHom = invViewProj*vec4(ndc.xy, -1, 1);
-    vec4 dirHom = invViewProj*vec4(ndc.xy, 1, 1);
+    vec4 originHom = invMvp*vec4(ndc.xy, -1, 1);
+    vec4 dirHom = invMvp*vec4(ndc.xy, 1, 1);
     vec3 dirWorld = dirHom.xyz / dirHom.w;
     vec3 rayOrigin = originHom.xyz / originHom.w;
     vec3 rayDir = normalize(dirWorld-rayOrigin);

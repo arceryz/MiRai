@@ -24,7 +24,7 @@ public:
     Ray3Program();
     void SetScene(Ray3Scene *_scene);
     void UpdatePoints(int num, Vector2 *points);
-    void Draw();
+    void Draw(Camera3D camera);
 private:
     Shader shader;
     ShaderBuffer mirrorVertexBuffer;

@@ -1,4 +1,5 @@
 #include "Ray3Program.h"
+#include <raymath.h>
 #include <rlgl.h>
 
 Ray3Program::Ray3Program()
@@ -32,7 +33,7 @@ void Ray3Program::SetScene(Ray3Scene *_scene)
     mirrorNormalBuffer = rlLoadShaderBuffer(normals.size()*sizeof(Vector4), normals.data(), RL_STATIC_READ);
     mirrorSizeBuffer = rlLoadShaderBuffer(sizes.size()*sizeof(int), sizes.data(), RL_STATIC_READ);
 }
-void Ray3Program::Draw()
+void Ray3Program::Draw(Camera3D camera)
 {
     if (!scene) return;
 
@@ -44,6 +45,13 @@ void Ray3Program::Draw()
     SetShaderValue(shader, 0, &numMirrors, SHADER_UNIFORM_INT);
     float edgeThick = 0.001f*edgeThickness;
     SetShaderValue(shader, 1, &edgeThick, SHADER_UNIFORM_FLOAT);
+
+    // Precompute inverted matrix so the fragment shader does not have to.
+    Matrix proj = rlGetMatrixProjection();
+    Matrix view = GetCameraMatrix(camera);
+    Matrix mvp = MatrixMultiply(MatrixMultiply(model.transform, view), proj);
+    Matrix invMvp = MatrixInvert(mvp);
+    SetShaderValueMatrix(shader, 2, invMvp);
 
     // The model uses the same shader, but we use the Raylib method
     // of drawing models since it is easiest.
