@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include "Ray3Scene.h"
 
+#define SPHERE_FOCUS_INF 1000.0f
 typedef int ShaderBuffer;
 
 // This class represents the 3D mirror raytracer.
@@ -15,10 +16,10 @@ class Ray3Program
 {
 public:
     int numMirrors = 0;
-    int numBounces = 0;
+    int numBounces = 5;
     Color color = GREEN;
     Model model;
-    float arcFocus = 1000.0f;
+    float sphereFocus = 1000.0f;
     float edgeThickness = 1.0f;
 
     Ray3Program();
@@ -28,8 +29,7 @@ public:
 private:
     Shader shader;
     ShaderBuffer mirrorVertexBuffer;
-    ShaderBuffer mirrorNormalBuffer;
-    ShaderBuffer mirrorSizeBuffer;
+    ShaderBuffer mirrorBuffer;
     Ray3Scene *scene;
     Shader renderProgram = {};
 };

@@ -88,3 +88,46 @@ $$
 $$
 
 If we wish to compute the reflection *off* the surface, then we simply mirror the incoming vector pointing towards the normal. So this formula is a *mirror* reflection when $\vec{v}$ points in the same direction as the normal, and a *surface* reflection if $\vec{v}$ points in the opposite direction.
+
+## 4. Raytracer3D overview
+
+The rays are cast by the fragment shader, which computes the ray direction using the projection and view matrices. NDC Coordinates are inverted to local space by multiplying with the inverse of the model-view-projection matrix.
+
+```mermaid
+graph LR;
+3dm["3D Model"]-->vs["Vertex Shader"]--NDC coords [-1, 1]-->fs["Fragment Shader"]
+```
+
+The fragment shader is where the raytracing happens. In general for raytracing, the essence is to
+
+1. Compute the local space ray origin $\vec{o}$ and direction $\vec{d}$ from NDC coordinates.
+2. For each reflection (numBounces) do the following:
+2.1 Determine which mirror has been collided with. This can be optimized but we simply iterate every mirror.
+2.2. Given the collided mirror and collision point, determine if there is an edge intersection. If so, stop and give color. This edge intersection test requires a distance check for each edge (straight or curved) which adds up to the cost of the algorithm. Edge visualising is not mandatory and can be substituted for corner visualisation or even single prop visualiation.
+2.3. Reflect the ray in the normal and set new origin.
+3. Set the fragment color.
+
+```mermaid
+graph TD
+Ray-->rayloop["For each reflection"]-->mloop["For each mirror"]-->det["Determine collision step"]
+det--Set new closest-->mloop
+mloop--Closest hit found-->edgeloop["For each edge"]-->detdi["Determine hit distance to edge"]
+detdi--Edge collision-->break["Break loops and set color"]
+edgeloop--No edge collision-->compref["Set new ray origin and direction"]
+compref--Next reflection-->rayloop
+rayloop--End of loop-->black["Set background color (Black)"]
+```
+
+## 5. Determine If Point In Polygon
+
+For the 3D curved mirrors we use a region of a circle as the surface. We must be able to determine of a collision occured inside that surface, which is determine by a polygon on a sphere. So given a point and a polygon, we have to determine if the point is inside. 
+
+There are two ways to do this
+
+### Convex Polygons
+
+Here we determine the winding number as a sum of internal angles of the vertices to the point. The sum of internal angles must be 360.
+
+### Any Polygon
+
+Here we must trace a ray from the point to any constant direction. The number of intersections with the polygon must be an odd number. This is more costly.

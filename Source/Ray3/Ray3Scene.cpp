@@ -85,23 +85,22 @@ vector<Vector4> Ray3Scene::GetMirrorVerticesPacked()
     }
     return vertices;
 }
-vector<Vector4> Ray3Scene::GetMirrorNormalsPacked()
+vector<MirrorInfo> Ray3Scene::GetMirrorInfosPacked()
 {
-    vector<Vector4> normals;
+    vector<MirrorInfo> infos;
+    int offset = 0;
     for (Polygon poly: mirrors) {
-        normals.push_back({ poly.normal.x, poly.normal.y, poly.normal.z, 0 });
+        MirrorInfo info = {};
+        info.normal = { poly.normal.x, poly.normal.y, poly.normal.z, 0 };
+        info.center = { poly.center.x, poly.center.y, poly.center.z, 0 };
+        info.vertexOffset = offset;
+        info.vertexCount = poly.vertices.size();
+        infos.push_back(info);
+        offset += info.vertexCount;
     }
-    return normals;
+    return infos;
 }
-vector<int> Ray3Scene::GetMirrorSizesPacked()
-{
-    vector<int> sizes;
-    for (Polygon poly: mirrors) {
-        sizes.push_back(poly.vertices.size());
-    }
-    return sizes;
-}
-int Ray3Scene::GetNumMirrors()
+int Ray3Scene::GetMirrorCount()
 {
     return mirrors.size();
 }
