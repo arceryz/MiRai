@@ -12,6 +12,7 @@
 
 int main()
 {
+    SetTraceLogLevel(LOG_ERROR);
     InitWindow(800, 800, "Mirai R");
     SetConfigFlags(FLAG_VSYNC_HINT);
     Ray2 ray2;

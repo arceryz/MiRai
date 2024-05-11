@@ -18,18 +18,23 @@ public:
     int numMirrors = 0;
     int numBounces = 5;
     Color color = GREEN;
-    Model model;
     float sphereFocus = 1000.0f;
     float edgeThickness = 1.0f;
+    float resolutionPercent = 0.5f;
+    float falloff = 0.15f;
+    bool dynamicResolution = true;
 
     Ray3Program();
     void SetScene(Ray3Scene *_scene);
+    Ray3Scene* GetScene();
     void UpdatePoints(int num, Vector2 *points);
     void Draw(Camera3D camera);
+
 private:
     Shader shader;
     ShaderBuffer mirrorVertexBuffer;
     ShaderBuffer mirrorBuffer;
+    RenderTexture2D renderTexture;
     Ray3Scene *scene;
     Shader renderProgram = {};
 };

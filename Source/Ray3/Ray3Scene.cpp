@@ -7,12 +7,14 @@ Ray3Scene::Ray3Scene()
 {
 
 }
+
 void Ray3Scene::AddMirrorModel(Model model, bool flipNormals)
 {
     for (int i = 0; i < model.meshCount; i++) {
         AddMirrorMesh(model.meshes[i], flipNormals);
     }
 }
+
 void Ray3Scene::AddMirrorMesh(Mesh mesh, bool flipNormals)
 {
     int vertexCount = mesh.triangleCount*3;
@@ -49,11 +51,12 @@ void Ray3Scene::AddMirrorMesh(Mesh mesh, bool flipNormals)
         for (Polygon &poly: polygons) {
             poly.normal = Vector3Scale(normals[kv.second[0]], flipNormals ? -1: 1);
         }
-        printf("Subnet consists of %d polygons\n", polygons.size());
+        //printf("Subnet consists of %d polygons\n", polygons.size());
         mirrors.insert(mirrors.end(), polygons.begin(), polygons.end());
     }
     printf("Extracted %d mirrors\n", mirrors.size());
 }
+
 void Ray3Scene::DebugDrawMesh(Mesh mesh)
 {
     Vector3 *vertices = (Vector3*)mesh.vertices;
@@ -67,13 +70,52 @@ void Ray3Scene::DebugDrawMesh(Mesh mesh)
         DrawLine3D(v, n, GREEN);
     }
 }
-void Ray3Scene::DrawMirrors(vector<Color> colors, float scale, float faceScale)
+
+void Ray3Scene::DrawMirrors(float scale, float faceScale)
 {
+    vector<Color> colors = {
+            RED,
+            GREEN,
+            BLUE,
+            ORANGE,
+            MAGENTA,
+            GRAY
+    };
+    DrawSphere({}, 0.01f * scale, WHITE);
     for (int i = 0; i < mirrors.size(); i++) {
         Color color = colors[i%colors.size()];
         mirrors[i].Draw(color, color, scale, faceScale);
     }
 }
+
+void Ray3Scene::NormalizeRadius()
+{
+    float largestDist = -1;
+    for (Polygon &p: mirrors) {
+        for (Vector3 v: p.vertices) {
+            float length = Vector3Length(v);
+            if (largestDist < 0 || length > largestDist) {
+                largestDist = length;
+            }
+        }
+    }
+    for (Polygon &p: mirrors) {
+        p.Scale(1.0f / largestDist);
+    }
+}
+
+void Ray3Scene::Centralize()
+{
+    Vector3 sum = {};
+    for (Polygon &p: mirrors) {
+        sum = Vector3Add(sum, p.GetCenter());
+    }
+    sum = Vector3Scale(sum, 1.0f / mirrors.size());
+    for (Polygon &p: mirrors) {
+        p.Translate(Vector3Negate(sum));
+    }
+}
+
 vector<Vector4> Ray3Scene::GetMirrorVerticesPacked()
 {
     vector<Vector4> vertices;
@@ -85,14 +127,16 @@ vector<Vector4> Ray3Scene::GetMirrorVerticesPacked()
     }
     return vertices;
 }
+
 vector<MirrorInfo> Ray3Scene::GetMirrorInfosPacked()
 {
     vector<MirrorInfo> infos;
     int offset = 0;
     for (Polygon poly: mirrors) {
         MirrorInfo info = {};
+        Vector3 center = poly.GetCenter();
         info.normal = { poly.normal.x, poly.normal.y, poly.normal.z, 0 };
-        info.center = { poly.center.x, poly.center.y, poly.center.z, 0 };
+        info.center = { center.x, center.y, center.z, 0 };
         info.vertexOffset = offset;
         info.vertexCount = poly.vertices.size();
         infos.push_back(info);
@@ -100,6 +144,7 @@ vector<MirrorInfo> Ray3Scene::GetMirrorInfosPacked()
     }
     return infos;
 }
+
 int Ray3Scene::GetMirrorCount()
 {
     return mirrors.size();

@@ -8,17 +8,6 @@
 // This class contains the Ray2 running/UI code.
 class Ray2 
 {
-private:
-    Ray2Scene scene;
-    Ray2Program program;
-
-    float numRaysFact = 0.5;
-    float focusFact = 1.0;
-    bool hyperbolic = false;
-    int shape = 5;
-    int currentShape = 5;
-    Vector3 color = { 1.0, 1.0, 1.0 };
-    Camera2D camera = {};
 public:
     Ray2(): program(scene)
     {
@@ -66,6 +55,18 @@ public:
             scene.GenerateRandomCirclePolygon(5, 20);
         }
     }
+
+private:
+    Ray2Scene scene;
+    Ray2Program program;
+    Camera2D camera = {};
+
+    float numRaysFact = 0.5;
+    float focusFact = 1.0;
+    bool hyperbolic = false;
+    int shape = 5;
+    int currentShape = 5;
+    Vector3 color = ColorToHSV({ 0, 255, 0, 255 });
 };
 
 #endif

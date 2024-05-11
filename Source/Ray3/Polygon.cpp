@@ -45,7 +45,6 @@ vector<Polygon> Polygon::FromTriangles(vector<Vector3> triangles)
             if (!hasNext) break;
         }
         if (poly.vertices.size() > 1) {
-            poly.ComputeCenter();
             polygons.push_back(poly);
         }
     }
@@ -57,18 +56,35 @@ Polygon::Polygon()
 {
 
 }
-void Polygon::ComputeCenter()
+
+Vector3 Polygon::GetCenter()
 {
     Vector3 sum = {};
     for (Vector3 v: vertices) {
         sum = Vector3Add(sum, v);
     }
-    center = Vector3Scale(sum, 1.0/vertices.size());
+    return Vector3Scale(sum, 1.0/vertices.size());
 }
+
+void Polygon::Scale(float factor)
+{
+    for (Vector3 &v: vertices) {
+        v = Vector3Scale(v, factor);
+    }
+}
+
+void Polygon::Translate(Vector3 vec)
+{
+    for (Vector3 &v: vertices) {
+        v = Vector3Add(v, vec);
+    }
+}
+
 void Polygon::Draw(Color color, Color normalColor, float scale, float faceScale, int numEdges)
 {
     // This matrix centers to origin, scales and then centers back.
     // A localized scaling around the center of the polygon.
+    Vector3 center = GetCenter();
     Matrix transform = MatrixTranslate(-center.x, -center.y, -center.z);
     transform = MatrixMultiply(transform, MatrixScale(faceScale, faceScale, faceScale));
     transform = MatrixMultiply(transform, MatrixTranslate(center.x, center.y, center.z));

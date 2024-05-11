@@ -10,13 +10,14 @@ using namespace std;
 class Polygon {
 public:
     vector<Vector3> vertices;
-    Vector3 center = {};
     Vector3 normal = {};
 
     static string VectorKey(Vector3 vec);
     static vector<Polygon> FromTriangles(vector<Vector3> triangles);
     Polygon();
-    void ComputeCenter();
+    Vector3 GetCenter();
+    void Scale(float factor);
+    void Translate(Vector3 vec);
     void Draw(Color color, Color normalColor, float scale, float faceScale, int numEdges=-1);
 };
 
