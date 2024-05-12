@@ -54,6 +54,8 @@ void Ray3Program::Draw(Camera3D camera)
     int resolution = (int)(800.0f*resolutionPercent);
     SetShaderValue(shader, 5, &resolution, SHADER_UNIFORM_INT);
     SetShaderValue(shader, 6, &falloff, SHADER_UNIFORM_FLOAT);
+    int showMarkInt = showMark + 2*showEdgeMark + 4*showEdges;
+    SetShaderValue(shader, 7, &showMarkInt, SHADER_UNIFORM_INT);
 
     // Draw to custom render target first and then scale the result.
     BeginTextureMode(renderTexture);

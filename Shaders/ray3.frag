@@ -23,6 +23,7 @@ layout(location=3) uniform float sphereFocus;
 layout(location=4) uniform int numBounces;
 layout(location=5) uniform int resolution;
 layout(location=6) uniform float falloff;
+layout(location=7) uniform int showMarkFlags;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -59,13 +60,25 @@ void main()
     vec3 rayDir = rayDirStart;
 
     vec3 col = vec3(0);
+    bool showMark = (showMarkFlags&1) == 1;
+    bool showEdgeMark = (showMarkFlags&2) == 2;
+    bool showEdges = (showMarkFlags&4) == 4;
 
     // We iterate every reflection.
     // Finding the first mirror collided with.
     for (int b=0; b < numBounces; b++) { 
+        if (showMark) {
+            HitInfo rhit = RaySphereHit(rayOrigin, rayDir, vec3(0, 0, 0), pow(0.05, 2), true);
+            if (rhit.t > 0) {
+                col = vec3(0, 0, 1) * dot(-rhit.normal, rayDir);
+                break;
+            }
+        }
+
         HitInfo minHit;
         minHit.t = -1;
         int mirrorIndex = 0;
+        int minEdgeIndex = 0;
         float minEdgeProj = 0;
 
         // Iterate every mirror and collide spheres.
@@ -88,6 +101,7 @@ void main()
             // 3. Validate if within edge bounds.
             // Iterate each edge and perform circularity check.
             float edgeProj = -1;
+            int edgeIndex = 0;
             bool inBounds = true;
             for (int j = 0; j < mirror.vertexCount; j++) {
                 vec3 u = vertices[mirror.offset + j].xyz;
@@ -108,6 +122,7 @@ void main()
                 }
                 else if (proj < edgeProj || edgeProj < 0) {
                     edgeProj = proj;
+                    edgeIndex = j;
                 }
             }
 
@@ -117,11 +132,18 @@ void main()
                 minHit = hit;
                 mirrorIndex = i;
                 minEdgeProj = edgeProj;
+                minEdgeIndex = edgeIndex;
             }
         }
 
-        if (minHit.t > 0 && minEdgeProj < edgeThickness) {
-            col = vec3(0, (1-0.5*minEdgeProj/edgeThickness)*pow(1-falloff, float(b)), 0);
+        if (minHit.t > 0 && minEdgeProj < edgeThickness && (showEdges || (showEdgeMark && mirrorIndex == 0))) {
+            vec3 colors[] = {
+                vec3(1, 0, 0),
+                vec3(0, 1, 0),
+                vec3(0, 0, 1)
+            };
+            float f = (1-0.5*minEdgeProj/edgeThickness)*pow(1-falloff, float(b));
+            col = f * colors[showEdgeMark ? (mirrorIndex == 0 ? 0 : 1): 1];
             break;
         }
         if (minHit.t < 0) break;

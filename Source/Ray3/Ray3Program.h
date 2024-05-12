@@ -23,6 +23,9 @@ public:
     float resolutionPercent = 0.5f;
     float falloff = 0.15f;
     bool dynamicResolution = true;
+    bool showMark = false;
+    bool showEdgeMark = false;
+    bool showEdges = true;
 
     Ray3Program();
     void SetScene(Ray3Scene *_scene);
