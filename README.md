@@ -1,4 +1,4 @@
-# Mirai 2D/3D Flat/Curved Mirror Simulator
+# Infinity Mirror Box Simulator in 2D and 3D
 
 <img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo3d.gif" width="288px">
 <img align="left" style="width:260px" src="https://github.com/arceryz/Mirai/blob/master/demo2d.gif" width="288px">
@@ -16,7 +16,7 @@ This mirror raytracer works with scenes that are described by 2D lines or 3D pol
 In 3D you get the first-person perspective of the rays, which is not possible in 2D (it would become a 1D image). The engine converts 3D triangle meshes to polygons for mirrors. All faces that are connected and have the same normal become a single mirror in the shader.
 
 - The /Ray2 directory holds the source for the 2D raytracer and 2D scene format.
-- THe /Ray3 diirectory holds the source for the 3D raytracer and 3D scene format.
+- THe /Ray3 directory holds the source for the 3D raytracer and 3D scene format.
 - Both directories contain a single header Ray2.h or Ray3.h that contains the GUI.
 - The main.cpp file switches between the two programs.
 
