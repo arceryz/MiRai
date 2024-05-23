@@ -19,9 +19,8 @@ struct MirrorInfo {
 
 class Ray3Scene
 {
-private:
-    vector<Polygon> mirrors;
 public:
+    vector<Polygon> mirrors;
     string name = "Unnamed Scene";
     Ray3Scene();
     void AddMirrorModel(Model model, bool flipNormals);

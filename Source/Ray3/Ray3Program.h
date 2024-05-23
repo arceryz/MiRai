@@ -20,6 +20,7 @@ public:
     Color color = GREEN;
     float sphereFocus = 1000.0f;
     float edgeThickness = 1.0f;
+    float markSize = 1.0f;
     float resolutionPercent = 0.5f;
     float falloff = 0.15f;
     bool dynamicResolution = true;

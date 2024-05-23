@@ -17,7 +17,7 @@ include_directories(Source/Ray2)
 include_directories(Source)
 include_directories(Source/External)
 include_directories(build/_deps/raylib-src/src)
-file(GLOB SOURCES Source/*.cpp Source/Ray2/*.cpp Source/Ray3/*.cpp)
+file(GLOB SOURCES Source/*.cpp Source/Ray2/*.cpp Source/Ray3/*.cpp Source/External/*.cpp)
 
 add_executable(Mirai ${SOURCES})
 target_link_libraries(Mirai PRIVATE raylib)

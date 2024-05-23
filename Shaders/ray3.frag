@@ -24,6 +24,7 @@ layout(location=4) uniform int numBounces;
 layout(location=5) uniform int resolution;
 layout(location=6) uniform float falloff;
 layout(location=7) uniform int showMarkFlags;
+layout(location=8) uniform float markSize;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -63,14 +64,16 @@ void main()
     bool showMark = (showMarkFlags&1) == 1;
     bool showEdgeMark = (showMarkFlags&2) == 2;
     bool showEdges = (showMarkFlags&4) == 4;
+    bool hyperbolic = sphereFocus < 0;
+    bool straight = abs(sphereFocus) > 999.0f;
 
     // We iterate every reflection.
     // Finding the first mirror collided with.
     for (int b=0; b < numBounces; b++) { 
         if (showMark) {
-            HitInfo rhit = RaySphereHit(rayOrigin, rayDir, vec3(0, 0, 0), pow(0.05, 2), true);
+            HitInfo rhit = RaySphereHit(rayOrigin, rayDir, vec3(0, 0, 0), markSize*markSize, true);
             if (rhit.t > 0) {
-                col = vec3(0, 0, 1) * dot(-rhit.normal, rayDir);
+                col = vec3(0, 0, 1) * dot(-rhit.normal, rayDir) * pow(1-falloff, float(b));;
                 break;
             }
         }
@@ -86,17 +89,32 @@ void main()
             MirrorInfo mirror = mirrors[i];
             vec3 cornerPoint = vertices[mirror.offset].xyz;
 
-            // 1. Hit with the correct half of the sphere.
-            // Spherical=Inside (outside=false)
-            vec3 cc = sphereFocus * mirror.normal.xyz;
-            float rsq = DistanceSq(cornerPoint, cc);
-            HitInfo hit = RaySphereHit(rayOrigin, rayDir, cc, rsq, false);
+            // First we perform a collision test with either flat planes
+            // or with sphere arcs.
+            // For sphere arcs we set an additional boolean to check if we're on the
+            // correct side of the collision.
+            HitInfo hit;
+            bool correctSide = true;
+            if (straight) {
+                hit = RayPlaneHit(rayOrigin, rayDir, mirror.normal.xyz, cornerPoint);
+                correctSide = dot(mirror.normal.xyz, rayDir) < 0;
+            }
+            else {
+                vec3 cc = abs(sphereFocus) * mirror.normal.xyz;
+                if (hyperbolic) {
+                    cc = mirror.center.xyz - 2 * mirror.normal.xyz * dot(cc-mirror.center.xyz, mirror.normal.xyz);
+                }
+                float rsq = DistanceSq(cornerPoint, cc);
+                hit = RaySphereHit(rayOrigin, rayDir, cc, rsq, hyperbolic);
 
-            // 2. Validate if outside.
-            // Checking if normal dot product is positive or negative.
-            // Negative means OUTSIDE since normals point inward.
-            vec3 centertohit = normalize(hit.point - mirror.center.xyz);
-            bool isOutside = dot(centertohit, mirror.normal.xyz) <= OUTSIDE_MARGIN;
+                // 2. Validate if outside.
+                // Checking if normal dot product is positive or negative.
+                // Negative means OUTSIDE since normals point inward.
+                vec3 centertohit = normalize(hit.point - mirror.center.xyz);
+                correctSide = hyperbolic ? dot(centertohit, mirror.normal.xyz) >= -OUTSIDE_MARGIN: 
+                    dot(centertohit, mirror.normal.xyz) <= OUTSIDE_MARGIN;
+            }
+            if (!correctSide) continue;
 
             // 3. Validate if within edge bounds.
             // Iterate each edge and perform circularity check.
@@ -126,7 +144,7 @@ void main()
                 }
             }
 
-            bool validity = hit.t > STEP_MIN && isOutside && inBounds;
+            bool validity = hit.t > STEP_MIN && inBounds;
             bool optimality = minHit.t < 0 || hit.t < minHit.t;
             if (validity && optimality) {
                 minHit = hit;
@@ -241,62 +259,5 @@ void EdgeCollide(vec3 o, vec3 d, out vec3 color)
             }
         }
         if (stop) break;
-    }
-}
-
-void CurvedEdgeCollide(vec3 o, vec3 d, out vec3 color)
-{
-    MirrorInfo minMirror;
-    HitInfo minHit;
-    minHit.t = -1;
-
-    for (int i=0; i < numMirrors; i++) {
-        MirrorInfo mirror = mirrors[i];
-        vec3 cornerPoint = vertices[mirror.offset].xyz;
-
-        // For hyperbolic or non-hyperbolic we must consider either
-        // the collisions inside or outside the shape.
-        vec3 cc = sphereFocus*mirror.normal.xyz;
-        float rsq = DistanceSq(cc, cornerPoint);
-        HitInfo hit = RaySphereHit(o, d, cc, rsq, true);
-        
-        if (hit.t > 0 && (minHit.t < 0 || hit.t < minHit.t)) {
-            minMirror = mirror;
-            minHit = hit;
-        }
-    }
-
-    bool isCorrect1 = dot(normalize(minHit.point - minMirror.center.xyz), minMirror.normal.xyz) <= OUTSIDE_MARGIN;
-    bool isCorrect2 = dot(normalize(o + d*minHit.t2 - minMirror.center.xyz), minMirror.normal.xyz) <= OUTSIDE_MARGIN;
-    float t = (isCorrect1 && isCorrect2) ? min(minHit.t, minHit.t2): (isCorrect1 ? minHit.t: minHit.t2);
-    vec3 point = o+t*d;
-
-    float edgeProj = -1;
-    bool isInside = true;
-    for (int j = 0; j < minMirror.vertexCount; j++) {
-        vec3 u = vertices[minMirror.offset + j].xyz;
-        vec3 v = vertices[minMirror.offset + (j+1)%minMirror.vertexCount].xyz;
-        
-        // Now the normal is given by the (v-u) x u, since our vertices lie on the sphere.
-        // We flip the normal to face the center of the face.
-        vec3 edgeNormal = normalize(cross(v-u, u));
-        edgeNormal *= sign(dot(edgeNormal, minMirror.center.xyz-u));
-
-        // Now we project with the vector from u to the hit point.
-        // Negative projections indicate we are outside the polygonal region!
-        // We ignore this mirror collision then.
-        float proj = dot(edgeNormal, point-u);
-        if (proj < 0) {
-            isInside = false;
-            break;
-        }
-        else if (proj < edgeProj || edgeProj < 0) {
-            edgeProj = proj;
-        }
-    }  
-
-    // We color if close and valid.
-    if (edgeProj < edgeThickness && isInside) {
-        color = vec3(0, 1-edgeProj/edgeThickness, 0);
     }
 }

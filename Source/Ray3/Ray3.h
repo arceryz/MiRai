@@ -4,11 +4,12 @@
 #include "Ray3Scene.h"
 #include "Ray3Program.h"
 #include "Rayman.h"
+#include "XCamera.h"
 
 class Ray3
 {
 private:
-    Camera3D camera = {};
+    XCamera *camera;
     vector<Ray3Scene> scenes;
     Ray3Program program;
     Model model;
@@ -23,7 +24,7 @@ private:
     bool selectingModel = false;
 
     // Parameter subtitutes.
-    float sphereFocusPercent = 1.0f;
+    float sphereFocusPercent = 0.0f;
     float numBouncesFl = 10;
     int sceneIndex = 0;
     bool extremeMode = false;
@@ -31,11 +32,8 @@ private:
 public:
     Ray3()
     {
-        camera.fovy = 45.0f;
-        camera.position = {};
-        camera.target = { 0, 0, 0 };
-        camera.up = { 0, 1, 0 };
-        camera.projection = CAMERA_PERSPECTIVE;
+        camera = new XCamera();
+        camera->internal.position = { 0, 0, 4 };
 
         FilePathList modelFiles = LoadDirectoryFiles("Models");
         for (int i = 0; i < modelFiles.count; i++) {
@@ -56,31 +54,33 @@ public:
     void Draw()
     {
         float dt = GetFrameTime();
-        program.sphereFocus = powf(sphereFocusPercent, 8) * (SPHERE_FOCUS_INF-1);
+        program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (SPHERE_FOCUS_INF);
         program.numBounces = (int)numBouncesFl;
         Ray3Scene *activeScene = &scenes[sceneIndex];
         if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
-
-        float spd = GetFrameTime();
-        if (IsKeyDown(KEY_UP)) camera.position.y += spd;
-        if (IsKeyDown(KEY_DOWN)) camera.position.y -= spd;
-        if (IsKeyPressed(KEY_SPACE)) doRotate = !doRotate;
         if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
-        camera.position.x = radius * cosf(DEG2RAD*rotY);
-        camera.position.z = radius * sinf(DEG2RAD*rotY);
-        float scroll = GetMouseWheelMove();
-        if (camera.projection == CAMERA_PERSPECTIVE) {
-            radius = Clamp(radius+scroll, 1, 10);
-            camera.fovy = 45.0f;
-        } 
-        else {
-            orthoSize = Clamp(orthoSize+scroll, 0.1, 10);
-            camera.fovy = orthoSize;
-        }
-        rotY += (float)(IsKeyDown(KEY_LEFT)-IsKeyDown(KEY_RIGHT)) * 15.0f*dt;
 
-        BeginMode3D(camera);
-        program.Draw(camera);
+        float scroll = GetMouseWheelMove();
+        float radialSpeed = 10.0f;
+        float hspeed = 35.0f;
+        float vspeed = 20.0f;
+        camera->AddRadius(scroll*dt*radialSpeed);
+        if (!camera->perspective) camera->orthoSize += scroll*dt*radialSpeed;
+        if (IsKeyDown(KEY_LEFT)) camera->RotateH(-hspeed*dt);
+        if (IsKeyDown(KEY_RIGHT)) camera->RotateH(+hspeed*dt);
+        if (IsKeyDown(KEY_UP)) camera->RotateV(vspeed*dt);
+        if (IsKeyDown(KEY_DOWN)) camera->RotateV(-vspeed*dt);
+        if (IsKeyPressed(KEY_A)) {
+            // Align to the first polygon of the scene.
+            Ray3Scene &scene = *program.GetScene();
+            Polygon &poly = scene.mirrors[0];
+            Vector3 normalvec = Vector3Scale(poly.normal, camera->GetRadius());
+            camera->internal.position = normalvec;
+        }
+        if (IsKeyPressed(KEY_S)) sphereFocusPercent = 0;
+
+        camera->Begin();
+        program.Draw(camera->internal);
         if (showMesh) program.GetScene()->DrawMirrors(0.99, 0.95);
         EndMode3D();
 
@@ -88,9 +88,7 @@ public:
             DrawFPS(10, 10);
             if (GuiButton({ 700, 10, 80, 20 }, TextFormat(showMesh ? "Mesh Visible": "Mesh Hidden"))) showMesh = !showMesh;
             if (GuiButton({ 700, 40, 80, 20 }, TextFormat(program.dynamicResolution ? "Dynamic Res": "Static Res"))) program.dynamicResolution = !program.dynamicResolution;
-            if (GuiButton({ 700, 70, 80, 20 }, TextFormat(camera.projection == CAMERA_PERSPECTIVE ? "Perspective": "Orthographic"))) {
-                camera.projection = camera.projection == CAMERA_PERSPECTIVE ? CAMERA_ORTHOGRAPHIC : CAMERA_PERSPECTIVE;
-            }
+            if (GuiButton({ 700, 70, 80, 20 }, TextFormat(camera->perspective ? "Perspective": "Orthographic"))) { camera->perspective = !camera->perspective; }
             if (GuiButton({ 700, 100, 80, 20 }, TextFormat(extremeMode ? "High Bounce": "Low Bounce"))) extremeMode = !extremeMode;
             if (GuiButton({ 680, 130, 100, 20 }, TextFormat(program.showMark ? "Mark Visible": "Mark Hidden"))) program.showMark = !program.showMark;
             if (GuiButton({ 680, 160, 100, 20 }, TextFormat(program.showEdgeMark ? "Edge Mark Visible": "Edge Mark Hidden"))) program.showEdgeMark = !program.showEdgeMark;
@@ -108,10 +106,11 @@ public:
             }
 
             GuiSlider({ 170, 10, 200, 10 }, "Edge Size", TextFormat("%.1f", program.edgeThickness), &program.edgeThickness, 0.1f, 10.0);
-            GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, 0, 1);  
+            GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
             GuiSlider({ 170, 50, 200, 10 }, "Num Bounces", TextFormat("%d", program.numBounces), &numBouncesFl, 0, extremeMode ? 100: 20);
             GuiSlider({ 170+300, 10, 200, 10 }, "Resolution%", TextFormat("%.2f", program.resolutionPercent), &program.resolutionPercent, 0, 1);
             GuiSlider({ 170+300, 30, 200, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0, 0.999f);
+            GuiSlider({ 170+300, 50, 200, 10 }, "Mark Size", TextFormat("%.2f", program.markSize), &program.markSize, 0.1f, 10.0f);
         }
     }
 };
