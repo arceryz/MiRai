@@ -45,8 +45,9 @@ void main()
     ray.x = cos(2*PI*prog);
     ray.y = sin(2*PI*prog);
 
-    //vec2 origin = vec2(cos(time*600), sin(time*600))*0.1;
     vec2 origin = rayOrigin;
+    //origin = vec2(cos(time*600), sin(time*600))*0.05;
+    bool hyperbolic = arcFocus < 0;
 
     // Trace all bounces and store the distance at each collision.
     float travelled = 0;
@@ -61,15 +62,16 @@ void main()
             distances[index*numBounces+i] = vec2(1);
             vec2 u = mirrorPoints[2*j];
             vec2 v = mirrorPoints[2*j+1];
+            vec2 c = (u+v)/2;
 
             vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
             bool doCurved = abs(arcFocus) < ARC_FOCUS_INF-1;
 
             HitInfo hit;
             if (doCurved) {  
-                vec2 arc = (u+v)/2 + n*arcFocus;
+                vec2 arc = n*arcFocus;
                 float rsq = dot(arc-u, arc-u);
-                hit = RayCircleHit(origin, ray, arc, rsq, arcFocus >= 0);
+                hit = RayCircleHit(origin, ray, arc, rsq, !hyperbolic);
             }
             else {
                 hit = RayLineHit(origin, ray, u, v);

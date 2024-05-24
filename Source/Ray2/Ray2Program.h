@@ -38,6 +38,7 @@ public:
     void UpdateScene(bool center=true);
     void ComputePass();
     void RenderPass();
+    float GetArcRadius();
 
 private:
     ShaderBuffer mirrorSSBO = 0;

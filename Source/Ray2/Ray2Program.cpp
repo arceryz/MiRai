@@ -96,3 +96,13 @@ void Ray2Program::RenderPass()
     rlDisableVertexArray(); 
     rlDisableShader();
 }
+
+float Ray2Program::GetArcRadius()
+{
+    // Take the first point and compute arc radius like in the shader.
+    Vector2 u = scene.mirrors[0];
+    Vector2 v = scene.mirrors[1];
+    Vector2 normal = Vector2Normalize({ -v.y+u.y, v.x-u.x });
+    Vector2 center = Vector2Scale(normal, arcFocus);
+    return Vector2Distance(center, u);
+}

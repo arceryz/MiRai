@@ -3,3 +3,4 @@ raylib.h
 raymath.h
 *.blend
 *.blend1
+/Export

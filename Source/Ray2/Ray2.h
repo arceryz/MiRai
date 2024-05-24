@@ -22,7 +22,7 @@ public:
     {
         program.numRays = (int)(pow(numRaysFact, 8) * MAX_RAYS);
         program.color = ColorFromHSV(color.x, color.y, color.z);
-        program.arcFocus = (hyperbolic ? -1 : 1) * (1+pow(focusFact, 5) * (ARC_FOCUS_INF-1));
+        program.arcFocus = (hyperbolic ? -1 : 1) * (pow(focusFact, 5) * (ARC_FOCUS_INF-1));
 
         BeginMode2D(camera);
         program.ComputePass();
@@ -35,9 +35,9 @@ public:
         float ox = 170;
         float oy = 15;
         GuiSlider({ ox, oy, 200, 10 }, "Rays%", TextFormat("%3.1f", 100*numRaysFact), &numRaysFact, 0, 1);
-        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f", program.arcFocus), &focusFact, 0, 1);
+        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f (r=%.3f)", -program.arcFocus, program.GetArcRadius()), &focusFact, 0.001, 1);
         GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", camera.zoom), &camera.zoom, 0.1, 2);
-        GuiCheckBox({ ox+240, oy+15, 20, 20 }, "Hyperbolic", &hyperbolic);
+        GuiCheckBox({ ox+315, oy+15, 20, 20 }, "Hyperbolic", &hyperbolic);
         GuiSpinner({ ox, oy+40, 80, 15 }, "Num Bounces ", &program.numBounces, 1, MAX_BOUNCES, false);
         GuiSpinner({ ox+130, oy+40, 80, 15 }, "Shape ", &shape, 3, 10, false);
     
