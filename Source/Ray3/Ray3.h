@@ -53,37 +53,46 @@ public:
     }
     void Draw()
     {
-        float dt = GetFrameTime();
-        program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (SPHERE_FOCUS_INF);
-        program.numBounces = (int)numBouncesFl;
-        Ray3Scene *activeScene = &scenes[sceneIndex];
-        if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
-        if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
+        { // Update Pass.
+            float dt = GetFrameTime();
+            program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (SPHERE_FOCUS_INF);
+            program.numBounces = (int)numBouncesFl;
+            Ray3Scene *activeScene = &scenes[sceneIndex];
+            if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
+            if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
 
-        float scroll = GetMouseWheelMove();
-        float radialSpeed = 10.0f;
-        float hspeed = 35.0f;
-        float vspeed = 20.0f;
-        camera->AddRadius(scroll*dt*radialSpeed);
-        if (!camera->perspective) camera->orthoSize += scroll*dt*radialSpeed;
-        if (IsKeyDown(KEY_LEFT)) camera->RotateH(-hspeed*dt);
-        if (IsKeyDown(KEY_RIGHT)) camera->RotateH(+hspeed*dt);
-        if (IsKeyDown(KEY_UP)) camera->RotateV(vspeed*dt);
-        if (IsKeyDown(KEY_DOWN)) camera->RotateV(-vspeed*dt);
-        if (IsKeyPressed(KEY_A)) {
-            // Align to the first polygon of the scene.
-            Ray3Scene &scene = *program.GetScene();
-            Polygon &poly = scene.mirrors[0];
-            Vector3 normalvec = Vector3Scale(poly.normal, camera->GetRadius());
-            camera->internal.position = normalvec;
+            float scroll = -GetMouseWheelMove();
+            float radialSpeed = 10.0f;
+            float hspeed = 35.0f;
+            float vspeed = 20.0f;
+            camera->SetRadius(camera->GetRadius()*(1.0+scroll*dt*radialSpeed));
+            if (!camera->perspective) camera->orthoSize = camera->orthoSize*(1.0+scroll*dt*radialSpeed);
+            if (IsKeyDown(KEY_A)) camera->RotateH(-hspeed*dt);
+            if (IsKeyDown(KEY_D)) camera->RotateH(+hspeed*dt);
+            if (IsKeyDown(KEY_W)) camera->RotateV(vspeed*dt);
+            if (IsKeyDown(KEY_S)) camera->RotateV(-vspeed*dt);
+            if (IsKeyPressed(KEY_E)) {
+                // Align to the first polygon of the scene.
+                Ray3Scene &scene = *program.GetScene();
+                Polygon &poly = scene.mirrors[0];
+                Vector3 normalvec = Vector3Scale(poly.normal, camera->GetRadius());
+                camera->internal.position = normalvec;
+            }
+            if (IsKeyPressed(KEY_R)) {
+                camera->SetRadius(0);
+                camera->orthoSize = 2;
+            }
+            if (IsKeyPressed(KEY_F)) sphereFocusPercent = 0;
         }
-        if (IsKeyPressed(KEY_S)) sphereFocusPercent = 0;
 
-        camera->Begin();
-        program.Draw(camera->internal);
-        if (showMesh) program.GetScene()->DrawMirrors(0.99, 0.95);
-        EndMode3D();
+        { // Render Pass.
+            camera->Begin();
+            program.Draw(camera->internal);
+            if (showMesh) program.GetScene()->DrawMirrors(0.99, 0.95);
+            EndMode3D();
+        }
 
+        // GUI Pass.
         if (!hideGui) {
             DrawFPS(10, 10);
             if (GuiButton({ 700, 10, 80, 20 }, TextFormat(showMesh ? "Mesh Visible": "Mesh Hidden"))) showMesh = !showMesh;

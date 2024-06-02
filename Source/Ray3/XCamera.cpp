@@ -37,12 +37,11 @@ void XCamera::RotateV(float deg)
     internal.position = Vector3RotateByAxisAngle(internal.position, left, DEG2RAD*deg);
 }
 
-void XCamera::AddRadius(float f)
+void XCamera::SetRadius(float rad)
 {
     Vector3 targetToPos = Vector3Subtract(internal.position, internal.target);
-    float currentRadius = Vector3Length(targetToPos);
     internal.position = Vector3Add(internal.target, 
-        Vector3Scale(Vector3Normalize(targetToPos), Clamp(f+currentRadius, 0.01f, 100.0f)));
+        Vector3Scale(Vector3Normalize(targetToPos), Clamp(rad, 0.01f, 100.0f)));
 }
 
 float XCamera::GetRadius()

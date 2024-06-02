@@ -87,7 +87,8 @@ void Ray2Program::RenderPass()
     rlSetUniform(2, &colvec, SHADER_UNIFORM_VEC3, 1);
     rlSetUniform(3, &falloff, SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(4, &pointSize, SHADER_UNIFORM_FLOAT, 1);
-
+    rlSetUniform(5, &zoom, SHADER_UNIFORM_FLOAT, 1);
+    rlSetUniform(6, &origin, SHADER_UNIFORM_VEC2, 1);
     rlBindShaderBuffer(distanceSSBO, 0);
 
     // Draw the particles. Instancing will duplicate the vertices.
@@ -95,6 +96,30 @@ void Ray2Program::RenderPass()
     rlDrawVertexArrayInstanced(0, 3, numRays*numBounces);
     rlDisableVertexArray(); 
     rlDisableShader();
+}
+
+void Ray2Program::InterfacePass()
+{
+    Vector2 originWorld = Transform(origin);
+    Vector2 centerWorld = Transform({ 0, 0 });
+    Vector2 radiusWorld = Transform({ 0, 1 });
+    DrawCircleLinesV(centerWorld, Vector2Length(Vector2Subtract(radiusWorld, centerWorld)), Fade(RED, 0.5));
+    DrawCircleV(originWorld, 1.0*zoom, RED);
+
+    float r = 0.3;
+    for (int i = 0; i < 10; i++) {
+        float angle = ((float)i)/10.0 * 2*PI;
+        Vector2 world = Transform(Vector2Add(origin, { r*cosf(angle), r*sinf(angle) }));
+        DrawLineV(originWorld, world, Fade(RED, 0.5));
+    }
+}
+
+Vector2 Ray2Program::Transform(Vector2 local)
+{
+    return {
+        (float)((local.x*zoom*0.1+1)/2.0*GetScreenWidth()),
+        (float)((-local.y*zoom*0.1+1)/2.0*GetScreenHeight())
+    };
 }
 
 float Ray2Program::GetArcRadius()

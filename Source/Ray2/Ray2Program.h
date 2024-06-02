@@ -24,8 +24,10 @@ public:
     int numRays = 0;
     int numBounces = 0;
     Color color = GREEN;
-    float falloff = 0.7f;
+    float falloff = 0.3f;
     float pointSize = 1.0;
+    float zoom = 1.0f;
+    Vector2 origin = { 0, 0 };
 
     // If the focus is +-INF, then we have the straight edges.
     // If the focus is positive, we enter spherical space.
@@ -38,7 +40,9 @@ public:
     void UpdateScene(bool center=true);
     void ComputePass();
     void RenderPass();
+    void InterfacePass();
     float GetArcRadius();
+    Vector2 Transform(Vector2 local);
 
 private:
     ShaderBuffer mirrorSSBO = 0;
@@ -47,7 +51,6 @@ private:
     ComputeShader computeProgram = 0;
     Shader renderProgram = {};
     int numWorkGroups = 0;
-    Vector2 origin = {};
     Ray2Scene &scene;
 };
 

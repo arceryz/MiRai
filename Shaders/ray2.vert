@@ -12,6 +12,8 @@ layout(location=1) uniform int numBounces;
 layout(location=2) uniform vec3 color;
 layout(location=3) uniform float falloff;
 layout(location=4) uniform float pointSize;
+layout(location=5) uniform float zoom;
+layout(location=6) uniform vec2 rayOrigin;
 
 // We will only output color.
 out vec4 fragColor;
@@ -30,18 +32,17 @@ void main()
 
     // Ray originate from (0, 0).
     vec2 ray;
-    ray.x = cos(2*PI*prog);
-    ray.y = sin(2*PI*prog);
-    ray *= 0.1*dist;
+    ray.x = dist*cos(2*PI*prog);
+    ray.y = dist*sin(2*PI*prog);
 
     vec2 pos = vertexPosition;
     pos *= 0.01 * pointSize;
-    pos += ray;
+    pos += (ray + rayOrigin)*0.1*zoom;
     
     gl_Position = vec4(pos.xy, 0, 1);
     localPos = vertexPosition;
 
-    float fade = pow(falloff, depth);
+    float fade = pow(1.0-falloff, depth);
     //fade *= 0.3+0.7*float(dmin<0.1);
     fragColor = vec4(color*fade, 1);
 }

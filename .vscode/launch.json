@@ -7,7 +7,7 @@
             "request": "launch",
             "preLaunchTask": "CMake: build",
             "cwd": "${workspaceRoot}",
-            "program": "${workspaceRoot}/build/Debug/Mirai.exe",
+            "program": "${workspaceRoot}/build/Release/Mirai.exe",
             "console": "integratedTerminal"
         }
     ]

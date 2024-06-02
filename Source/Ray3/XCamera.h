@@ -19,7 +19,7 @@ public:
     void Begin();
     void RotateH(float deg);
     void RotateV(float deg);
-    void AddRadius(float f);
+    void SetRadius(float rad);
     float GetRadius();
 };
 
