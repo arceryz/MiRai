@@ -4,3 +4,4 @@ raymath.h
 *.blend
 *.blend1
 /Export
+/Renders

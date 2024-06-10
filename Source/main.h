@@ -4,5 +4,6 @@
 #include "raylib.h"
 
 extern Color clearColor;
+extern Color mainEdgeColor;
 
 #endif

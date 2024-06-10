@@ -12,27 +12,73 @@
 #define MAX_POLYGON_POINTS 100
 
 Color clearColor = BLACK;
+Color mainEdgeColor = { 0, 255, 0, 255 };
+RenderTexture2D resultTexture;
 
 int main()
 {
     SetTraceLogLevel(LOG_ERROR);
+    SetTargetFPS(144);
     InitWindow(800, 800, "Mirai R");
-    SetConfigFlags(FLAG_VSYNC_HINT);
     printf("Starting up MiRai.\n");
     Ray2 ray2;
     Ray3 ray3;
     bool mode3D = true;
     bool setColor = false;
+    bool setMainColor = false;
+    bool exportMode = false;
+    bool exportEditingText = false;
+    char exportPath[256] = {};
+    resultTexture = LoadRenderTexture(800, 800);
     
     while(!WindowShouldClose()) {
         BeginDrawing();
         ClearBackground(clearColor); 
 
-        if (mode3D) ray3.Draw();
-        else ray2.Draw();
+        // Step 1. Perform Render to texture/Compute shaders.
+        if (!exportMode) {
+            if (mode3D) ray3.RenderUpdate();
+            else ray2.RenderUpdate();
+        }
 
-        if (GuiButton({ 650, 770, 110, 20 }, "Background Color")) setColor = !setColor;
-        if (setColor) GuiColorPicker({ 650, 650, 110, 100 }, "Color", &clearColor);
+        // Step 2. Render to output texture.
+        BeginTextureMode(resultTexture);
+        ClearBackground({ 0, 0, 0, 0 });
+        
+        rlSetBlendFactorsSeparate(
+            RL_SRC_ALPHA, RL_ONE_MINUS_SRC_ALPHA, 
+            RL_ONE, RL_ONE_MINUS_SRC_ALPHA, 
+            RL_FUNC_ADD, RL_FUNC_ADD);
+        BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+        
+        if (mode3D) ray3.DrawContent();
+        else ray2.DrawContent();
+    
+        EndBlendMode();
+        EndTextureMode();
+
+        // Step 3. Render to screen.
+        DrawTexturePro(resultTexture.texture, { 0, 0, 800, -800 }, { 0, 0, 800, 800 }, {}, 0, WHITE);
+        if (mode3D) ray3.DrawGUI(); 
+        else ray2.DrawGUI();
+
+        if (GuiButton({ 60, 770, 60, 20 }, "Save As")) exportMode = !exportMode; 
+        if (exportMode) {
+            GuiDrawText("Specify the path to save rendered image", { 200, 680, 400, 20 }, TEXT_ALIGN_CENTER, WHITE);
+            if (GuiTextBox({ 200, 700, 400, 20}, exportPath, 256, exportEditingText)) exportEditingText = !exportEditingText;
+            if (GuiButton({ 350, 730, 100, 20 }, "Confirm")) {
+                 Image im = LoadImageFromTexture(resultTexture.texture);
+                 ImageFlipVertical(&im);
+                 ExportImage(im, exportPath);
+                 UnloadImage(im);
+                 exportMode = false;
+                 printf("Image exported to \"%s\"\n", exportPath);
+            }
+        }
+        if (GuiButton({ 550, 770, 110, 20 }, "Main Edge Color")) setMainColor = !setMainColor;
+        if (setMainColor) GuiColorPicker({ 550, 650, 85, 100 }, "Color", &mainEdgeColor);
+        if (GuiButton({ 670, 770, 110, 20 }, "Background Color")) setColor = !setColor;
+        if (setColor) GuiColorPicker({ 670, 650, 85, 100 }, "Color", &clearColor);
         if (GuiButton({ 10, 770, 40, 20 }, TextFormat("%s", mode3D? "3D": "2D"))) mode3D = !mode3D;
         EndDrawing();
     }

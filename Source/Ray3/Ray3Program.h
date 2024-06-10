@@ -28,12 +28,14 @@ public:
     bool showEdgeMark = false;
     bool showEdges = true;
     Color innerClearColor = { 0, 0, 0, 0 };
+    Color edgeColor = { 0, 255, 0, 255 };
 
     Ray3Program();
     void SetScene(Ray3Scene *_scene);
     Ray3Scene* GetScene();
     void UpdatePoints(int num, Vector2 *points);
-    void Draw(Camera3D camera);
+    void Draw();
+    void Render(Camera3D camera);
 
 private:
     Shader shader;
@@ -42,6 +44,7 @@ private:
     RenderTexture2D renderTexture;
     Ray3Scene *scene;
     Shader renderProgram = {};
+    int resolution = 800;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include "Ray2Scene.h"
 #include "Ray2Program.h"
 #include "raygui.h"
+#include "main.h"
 
 // This class contains the Ray2 running/UI code.
 class Ray2 
@@ -23,39 +24,33 @@ public:
         camera.target = { 400, 400 };
         camera.zoom = 1.0;
     };
-    void Draw() 
+    void RenderUpdate()
     {
-        { // Update Pass
-            float delta = GetFrameTime();
-            program.numRays = (int)(pow(numRaysFact, 8) * MAX_RAYS);
-            program.color = ColorFromHSV(color.x, color.y, color.z);
-            program.arcFocus = (hyperbolic ? -1 : 1) * (pow(focusFact, 5) * (ARC_FOCUS_INF-1));
+        float delta = GetFrameTime();
+        program.numRays = (int)(pow(numRaysFact, 8) * MAX_RAYS);
+        program.color = ColorFromHSV(color.x, color.y, color.z);
+        program.arcFocus = (hyperbolic ? -1 : 1) * (pow(focusFact, 5) * (ARC_FOCUS_INF-1));
 
-            if (currentShape != shape) {
-                currentShape = shape;
-                scene.GenerateRegularPolygon(shape);
-            }
-            if (IsKeyPressed(KEY_R)) {
-                scene.GenerateRandomCirclePolygon(5, 20);
-            }
-            if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
-
-            originAngle += 45.0*delta*(IsKeyDown(KEY_D) ? -1.0: (IsKeyDown(KEY_A) ? +1.0: 0.0));
-            originRadius = Clamp(originRadius+0.5*delta*(IsKeyDown(KEY_W) ? 1.0: (IsKeyDown(KEY_S) ? -1.0: 0.0)), 0, 1);
-            program.origin = { originRadius*cosf(DEG2RAD*originAngle), originRadius*sinf(DEG2RAD*originAngle) };
-
-            float scroll = GetMouseWheelMove();
-            program.zoom = Clamp(program.zoom * (1.0 + scroll*0.2), 0.25, 4.0);
+        if (currentShape != shape) {
+            currentShape = shape;
+            scene.GenerateRegularPolygon(shape);
         }
-
-        { // Render pass.
-            BeginMode2D(camera);
-            program.ComputePass();
-            program.RenderPass();
-            if (drawInterface) program.InterfacePass();
-            EndMode2D();
+        if (IsKeyPressed(KEY_R)) {
+            scene.GenerateRandomCirclePolygon(5, 20);
         }
+        if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
 
+        originAngle += 45.0*delta*(IsKeyDown(KEY_D) ? -1.0: (IsKeyDown(KEY_A) ? +1.0: 0.0));
+        originRadius = Clamp(originRadius+0.5*delta*(IsKeyDown(KEY_W) ? 1.0: (IsKeyDown(KEY_S) ? -1.0: 0.0)), 0, 1);
+        program.origin = { originRadius*cosf(DEG2RAD*originAngle), originRadius*sinf(DEG2RAD*originAngle) };
+
+        float scroll = GetMouseWheelMove();
+        program.zoom = Clamp(program.zoom * (1.0 + scroll*0.2), 0.25, 4.0);
+        program.color = mainEdgeColor;
+        program.ComputePass();
+    }
+    void DrawGUI()
+    {
         if (!hideGui)
         { // Gui Pass.
             DrawText(TextFormat("N=%d", program.numRays), 10, 30, 20, DARKGRAY);
@@ -76,6 +71,13 @@ public:
             GuiSlider({ ox, oy, 100, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0.001, 1);
             GuiSlider({ ox, oy+20, 100, 10 }, "Point Size", TextFormat("%.2f", program.pointSize), &program.pointSize, 0.3, 3);
         }
+    }
+    void DrawContent() 
+    {
+        BeginMode2D(camera);
+        program.RenderPass();
+        if (drawInterface) program.InterfacePass();
+        EndMode2D();
     }
 
 private:

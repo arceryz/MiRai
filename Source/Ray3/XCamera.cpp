@@ -15,7 +15,7 @@ XCamera::~XCamera()
     
 }
 
-void XCamera::Begin()
+void XCamera::Update()
 {
     forward = Vector3Normalize(Vector3Subtract(internal.target, internal.position));
     left = Vector3Normalize(Vector3CrossProduct(UNIT_Y, forward));
@@ -24,7 +24,6 @@ void XCamera::Begin()
     fovy = Clamp(fovy, 1, 179);
     orthoSize = Clamp(orthoSize, 0.1, 10.0f);
     internal.fovy = perspective ? fovy: orthoSize;
-    BeginMode3D(internal);
 }
 
 void XCamera::RotateH(float deg)

@@ -26,6 +26,7 @@ layout(location=6) uniform float falloff;
 layout(location=7) uniform int showMarkFlags;
 layout(location=8) uniform float markSize;
 layout(location=9) uniform vec4 innerClearColor;
+layout(location=10) uniform vec3 edgeColor;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -44,7 +45,7 @@ HitInfo RaySphereHit(vec3 o, vec3 d, vec3 cc, float rsq, bool convex);
 HitInfo RayPlaneHit(vec3 o, vec3 d, vec3 n, vec3 u);
 LineProjection PointLineProject(vec3 p, vec3 u, vec3 v);
 float DistanceSq(vec3 a, vec3 b);
-void EdgeCollide(vec3 o, vec3 d, out vec3 color);
+void EdgeCollide(vec3 o, vec3 d, inout vec3 color);
 void CurvedEdgeCollide(vec3 o, vec3 d, out vec3 color);
 
 void main()
@@ -162,12 +163,12 @@ void main()
         if (minHit.t > 0 && minEdgeProj < edgeThickness && (showEdges || (showEdgeMark && mirrorIndex == 0))) {
             vec3 colors[] = {
                 vec3(1, 0, 0),
-                vec3(0, 1, 0),
+                edgeColor,
                 vec3(0, 0, 1)
             };
             float e = (1-0.5*minEdgeProj/edgeThickness);
             float f = e*pow(1-falloff, float(b));
-            col.rgb = colors[showEdgeMark ? (mirrorIndex == 0 ? 0 : 1): 1] * f;
+            col.rgb = mix(innerClearColor.rgb, colors[showEdgeMark ? (mirrorIndex == 0 ? 0 : 1): 1], f);
             col.a = 1.0;
             break;
         }
@@ -181,7 +182,7 @@ void main()
         rayDir = reflect(rayDir, minHit.normal);
     }
     finalColor = col;
-    finalColor.a = float(isInBox);
+    finalColor.a = float(isInBox) * col.a;
 }
 
 HitInfo RaySphereHit(vec3 o, vec3 d, vec3 cc, float rsq, bool outside)
@@ -243,7 +244,7 @@ float DistanceSq(vec3 a, vec3 b)
     return dot(a-b, a-b);
 }
 
-void EdgeCollide(vec3 o, vec3 d, out vec3 color)
+void EdgeCollide(vec3 o, vec3 d, inout vec3 color)
 {
     // We draw the outside seperately from mirror reflections.
     // For this we intersect with the spheres but add a validity test
@@ -251,9 +252,10 @@ void EdgeCollide(vec3 o, vec3 d, out vec3 color)
     for (int i=0; i < numMirrors; i++) {
         MirrorInfo mirror = mirrors[i];
         vec3 cornerPoint = vertices[mirror.offset].xyz;
+        if (dot(mirror.normal.xyz, d) < 0) continue;
 
         HitInfo hit = RayPlaneHit(o, d, mirror.normal.xyz, cornerPoint);
-        if (hit.t < 0) continue;
+        if (hit.t < STEP_MIN) continue;
 
         // STAGE 1: EDGE VISUALISATION.
         bool stop = false;

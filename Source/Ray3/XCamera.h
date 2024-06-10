@@ -16,7 +16,7 @@ public:
 
     XCamera();
     ~XCamera();
-    void Begin();
+    void Update();
     void RotateH(float deg);
     void RotateV(float deg);
     void SetRadius(float rad);

@@ -23,7 +23,11 @@ void Ray3Program::SetScene(Ray3Scene *_scene)
     mirrorVertexBuffer = rlLoadShaderBuffer(vertices.size()*sizeof(Vector4), vertices.data(), RL_STATIC_READ);
     mirrorBuffer = rlLoadShaderBuffer(infos.size()*sizeof(MirrorInfo), infos.data(), RL_STATIC_READ);
 }
-void Ray3Program::Draw(Camera3D camera)
+void Ray3Program::Draw()
+{
+    DrawTexturePro(renderTexture.texture, { 0, 0, (float)resolution, -(float)resolution }, { 0, 0, 800, 800 }, {}, 0, WHITE);
+}
+void Ray3Program::Render(Camera3D camera)
 {
     if (!scene) return;
     if (dynamicResolution) {
@@ -35,6 +39,9 @@ void Ray3Program::Draw(Camera3D camera)
         if (fps < targetfps-3) resolutionPercent -= inc * dfps;
         resolutionPercent = Clamp(resolutionPercent, 0, 1);
     }
+
+    BeginTextureMode(renderTexture);
+    BeginMode3D(camera);
 
     // We only have to bind the buffers once.
     // They will persist for the entire drawing time.
@@ -53,7 +60,7 @@ void Ray3Program::Draw(Camera3D camera)
 
     SetShaderValue(shader, 3, &sphereFocus, SHADER_UNIFORM_FLOAT);
     SetShaderValue(shader, 4, &numBounces, SHADER_UNIFORM_INT);
-    int resolution = (int)(800.0f*resolutionPercent);
+    resolution = (int)(800.0f*resolutionPercent);
     SetShaderValue(shader, 5, &resolution, SHADER_UNIFORM_INT);
     SetShaderValue(shader, 6, &falloff, SHADER_UNIFORM_FLOAT);
     int showMarkInt = showMark + 2*showEdgeMark + 4*showEdges;
@@ -63,14 +70,12 @@ void Ray3Program::Draw(Camera3D camera)
 
     Vector4 innerColorNorm = ColorNormalize(innerClearColor);
     SetShaderValue(shader, 9, &innerColorNorm, SHADER_UNIFORM_VEC4);
+    Vector4 edgeColorNorm = ColorNormalize(edgeColor);
+    SetShaderValue(shader, 10, &edgeColorNorm, SHADER_UNIFORM_VEC3);
 
     // Draw to custom render target first and then scale the result.
-    BeginTextureMode(renderTexture);
     rlViewport(0, 0, resolution, resolution);
-
-    EndMode3D();
-    ClearBackground(clearColor);
-    BeginMode3D(camera);
+    ClearBackground({ 0, 0, 0, 0 });
    
     // Draw a sphere that is the largest size that our models can be.
     rlSetCullFace(RL_CULL_FACE_FRONT);
@@ -81,11 +86,7 @@ void Ray3Program::Draw(Camera3D camera)
 
     EndMode3D();
     EndTextureMode();
-    rlViewport(0, 0, 800, 800);
-    DrawTexturePro(renderTexture.texture, { 0, 0, (float)resolution, -(float)resolution }, { 0, 0, 800, 800 }, {}, 0, WHITE);
-    BeginMode3D(camera);
 }
-
 Ray3Scene* Ray3Program::GetScene()
 {
     return scene;
