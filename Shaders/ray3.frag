@@ -61,12 +61,13 @@ void main()
     vec3 rayOrigin = rayOriginStart;
     vec3 rayDir = rayDirStart;
 
-    vec4 col = vec4(0);
+    vec4 col = innerClearColor;
     bool showMark = (showMarkFlags&1) == 1;
     bool showEdgeMark = (showMarkFlags&2) == 2;
     bool showEdges = (showMarkFlags&4) == 4;
     bool hyperbolic = sphereFocus < 0;
     bool straight = abs(sphereFocus) > 999.0f;
+    bool isInBox = true;
 
     // We iterate every reflection.
     // Finding the first mirror collided with.
@@ -170,7 +171,8 @@ void main()
             col.a = 1.0;
             break;
         }
-        if (minHit.t < 0) {
+        if (minHit.t < 0 && b == 0) {
+            isInBox = false;
             break;
         }
 
@@ -178,7 +180,8 @@ void main()
         rayOrigin = minHit.point;
         rayDir = reflect(rayDir, minHit.normal);
     }
-    finalColor = (b == numBounces) ? innerClearColor: col;
+    finalColor = col;
+    finalColor.a = float(isInBox);
 }
 
 HitInfo RaySphereHit(vec3 o, vec3 d, vec3 cc, float rsq, bool outside)
