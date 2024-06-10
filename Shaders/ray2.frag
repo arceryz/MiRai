@@ -8,5 +8,5 @@ void main()
 {
     // There is only one thing to do.
     finalColor.a = smoothstep(1, 0, dot(localPos, localPos)/0.4);
-    finalColor.rgb = fragColor.rgb;
+    finalColor.rgb = fragColor.rgb * fragColor.a;
 }

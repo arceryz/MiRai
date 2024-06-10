@@ -28,6 +28,7 @@ private:
     float numBouncesFl = 10;
     int sceneIndex = 0;
     bool extremeMode = false;
+    bool setInnerColor = false;
 
 public:
     Ray3()
@@ -36,6 +37,7 @@ public:
         camera->internal.position = { 0, 0, 4 };
 
         FilePathList modelFiles = LoadDirectoryFiles("Models");
+
         for (int i = 0; i < modelFiles.count; i++) {
             const char *path = modelFiles.paths[i];
             const char *basename = GetFileNameWithoutExt(path);
@@ -47,6 +49,11 @@ public:
             scene.AddMirrorModel(model, true);
             scene.NormalizeRadius();
             scene.Centralize();
+            scenes.push_back(scene);
+        }
+        if (scenes.size() == 0) {
+            Ray3Scene scene;
+            scene.name = "Empty Scene";
             scenes.push_back(scene);
         }
         program.SetScene(&scenes[0]);
@@ -102,7 +109,11 @@ public:
             if (GuiButton({ 680, 130, 100, 20 }, TextFormat(program.showMark ? "Mark Visible": "Mark Hidden"))) program.showMark = !program.showMark;
             if (GuiButton({ 680, 160, 100, 20 }, TextFormat(program.showEdgeMark ? "Edge Mark Visible": "Edge Mark Hidden"))) program.showEdgeMark = !program.showEdgeMark;
             if (GuiButton({ 680, 190, 100, 20 }, TextFormat(program.showEdges ? "Edges Visible": "Edges Hidden"))) program.showEdges = !program.showEdges;
-
+            
+            if (GuiButton({ 680, 220, 100, 20 }, "Inner Color")) setInnerColor = !setInnerColor;
+            if (setInnerColor) GuiColorPicker({ 550, 220, 100, 100 }, "", &program.innerClearColor);
+            program.innerClearColor.a = 255;
+            
             if (GuiButton({ 10, 70, 80, 20 }, selectingModel ? "> > >": program.GetScene()->name.c_str()))  selectingModel = !selectingModel;
             if (selectingModel) {
                 for (int i = 0; i < scenes.size(); i++) {
@@ -117,9 +128,13 @@ public:
             GuiSlider({ 170, 10, 200, 10 }, "Edge Size", TextFormat("%.1f", program.edgeThickness), &program.edgeThickness, 0.1f, 10.0);
             GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
             GuiSlider({ 170, 50, 200, 10 }, "Num Bounces", TextFormat("%d", program.numBounces), &numBouncesFl, 0, extremeMode ? 100: 20);
-            GuiSlider({ 170+300, 10, 200, 10 }, "Resolution%", TextFormat("%.2f", program.resolutionPercent), &program.resolutionPercent, 0, 1);
-            GuiSlider({ 170+300, 30, 200, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0, 0.999f);
-            GuiSlider({ 170+300, 50, 200, 10 }, "Mark Size", TextFormat("%.2f", program.markSize), &program.markSize, 0.1f, 10.0f);
+            GuiSlider({ 170+300, 10, 190, 10 }, "Resolution%", TextFormat("%.2f", program.resolutionPercent), &program.resolutionPercent, 0, 1);
+            GuiSlider({ 170+300, 30, 190, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0, 0.999f);
+            GuiSlider({ 170+300, 50, 190, 10 }, "Mark Size", TextFormat("%.2f", program.markSize), &program.markSize, 0.1f, 10.0f);
+            GuiSlider({ 170+300, 70, 190, 10 }, "FOV", TextFormat("%.2f", camera->fovy), &camera->fovy, 10.0, 145.0);
+        }
+        else {
+             GuiSlider({ 200, 10, 400, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
         }
     }
 };

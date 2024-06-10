@@ -1,4 +1,5 @@
 #include "Ray3Program.h"
+#include "main.h"
 #include <raymath.h>
 #include <rlgl.h>
 
@@ -24,6 +25,7 @@ void Ray3Program::SetScene(Ray3Scene *_scene)
 }
 void Ray3Program::Draw(Camera3D camera)
 {
+    if (!scene) return;
     if (dynamicResolution) {
         int targetfps = 60;
         int fps = GetFPS();
@@ -59,12 +61,15 @@ void Ray3Program::Draw(Camera3D camera)
     float markSizeFl = 0.05f * markSize;
     SetShaderValue(shader, 8, &markSizeFl, SHADER_UNIFORM_FLOAT);
 
+    Vector4 innerColorNorm = ColorNormalize(innerClearColor);
+    SetShaderValue(shader, 9, &innerColorNorm, SHADER_UNIFORM_VEC4);
+
     // Draw to custom render target first and then scale the result.
     BeginTextureMode(renderTexture);
     rlViewport(0, 0, resolution, resolution);
 
     EndMode3D();
-    ClearBackground(BLACK);
+    ClearBackground(clearColor);
     BeginMode3D(camera);
    
     // Draw a sphere that is the largest size that our models can be.

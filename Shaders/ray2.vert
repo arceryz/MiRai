@@ -44,5 +44,5 @@ void main()
 
     float fade = pow(1.0-falloff, depth);
     //fade *= 0.3+0.7*float(dmin<0.1);
-    fragColor = vec4(color*fade, 1);
+    fragColor = vec4(color, fade);
 }

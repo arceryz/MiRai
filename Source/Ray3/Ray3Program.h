@@ -27,6 +27,7 @@ public:
     bool showMark = false;
     bool showEdgeMark = false;
     bool showEdges = true;
+    Color innerClearColor = { 0, 0, 0, 0 };
 
     Ray3Program();
     void SetScene(Ray3Scene *_scene);

@@ -25,6 +25,7 @@ layout(location=5) uniform int resolution;
 layout(location=6) uniform float falloff;
 layout(location=7) uniform int showMarkFlags;
 layout(location=8) uniform float markSize;
+layout(location=9) uniform vec4 innerClearColor;
 uniform mat4 mvp;
 
 const float STEP_MIN = 0.001f;
@@ -60,7 +61,7 @@ void main()
     vec3 rayOrigin = rayOriginStart;
     vec3 rayDir = rayDirStart;
 
-    vec3 col = vec3(0);
+    vec4 col = vec4(0);
     bool showMark = (showMarkFlags&1) == 1;
     bool showEdgeMark = (showMarkFlags&2) == 2;
     bool showEdges = (showMarkFlags&4) == 4;
@@ -69,11 +70,13 @@ void main()
 
     // We iterate every reflection.
     // Finding the first mirror collided with.
-    for (int b=0; b < numBounces; b++) { 
+    int b;
+    for (b=0; b < numBounces; b++) { 
         if (showMark) {
             HitInfo rhit = RaySphereHit(rayOrigin, rayDir, vec3(0, 0, 0), markSize*markSize, true);
             if (rhit.t > 0) {
-                col = vec3(0, 0, 1) * dot(-rhit.normal, rayDir) * pow(1-falloff, float(b));;
+                col.rgb = vec3(0, 0, 1) * dot(-rhit.normal, rayDir) * pow(1-falloff, float(b));
+                col.a = 1.0;
                 break;
             }
         }
@@ -154,23 +157,28 @@ void main()
             }
         }
 
+        // Edge collision.
         if (minHit.t > 0 && minEdgeProj < edgeThickness && (showEdges || (showEdgeMark && mirrorIndex == 0))) {
             vec3 colors[] = {
                 vec3(1, 0, 0),
                 vec3(0, 1, 0),
                 vec3(0, 0, 1)
             };
-            float f = (1-0.5*minEdgeProj/edgeThickness)*pow(1-falloff, float(b));
-            col = f * colors[showEdgeMark ? (mirrorIndex == 0 ? 0 : 1): 1];
+            float e = (1-0.5*minEdgeProj/edgeThickness);
+            float f = e*pow(1-falloff, float(b));
+            col.rgb = colors[showEdgeMark ? (mirrorIndex == 0 ? 0 : 1): 1] * f;
+            col.a = 1.0;
             break;
         }
-        if (minHit.t < 0) break;
+        if (minHit.t < 0) {
+            break;
+        }
 
         // Reflect.
         rayOrigin = minHit.point;
         rayDir = reflect(rayDir, minHit.normal);
     }
-    finalColor = vec4(col, 1);
+    finalColor = (b == numBounces) ? innerClearColor: col;
 }
 
 HitInfo RaySphereHit(vec3 o, vec3 d, vec3 cc, float rsq, bool outside)
