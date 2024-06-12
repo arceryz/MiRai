@@ -32,8 +32,10 @@ void main()
 
     // Ray originate from (0, 0).
     vec2 ray;
-    ray.x = dist*cos(2*PI*prog);
-    ray.y = dist*sin(2*PI*prog);
+    //float rayAngle = 0.5*PI + 2*PI/10.0*prog;
+    float rayAngle = 2*PI*prog;
+    ray.x = dist*cos(rayAngle);
+    ray.y = dist*sin(rayAngle);
 
     vec2 pos = vertexPosition;
     pos *= 0.01 * pointSize;

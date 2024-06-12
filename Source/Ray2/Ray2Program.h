@@ -3,13 +3,13 @@
 
 #include <raylib.h>
 #include "Ray2Scene.h"
+#include "main.h"
 
 #define WORKGROUP_SIZE 1024
 #define MAX_MIRRORS 1000
 #define MAX_BOUNCES 16
 #define MAX_WORKGROUPS 500
 #define MAX_RAYS (MAX_WORKGROUPS*WORKGROUP_SIZE)
-#define ARC_FOCUS_INF 1000.0f
 
 typedef int ShaderBuffer;
 typedef int ComputeShader;
@@ -32,7 +32,7 @@ public:
     // If the focus is +-INF, then we have the straight edges.
     // If the focus is positive, we enter spherical space.
     // If the focus is negative, we enter hyperbolic space.
-    float arcFocus = ARC_FOCUS_INF;
+    float arcFocus = FOCUS_INF;
 
     Ray2Program(Ray2Scene &_scene);
     // Update the mirrors as a sequence of line segments.

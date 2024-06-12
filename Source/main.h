@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+#define FOCUS_INF 1000.0
+
 extern Color clearColor;
 extern Color mainEdgeColor;
 

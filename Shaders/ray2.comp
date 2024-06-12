@@ -20,7 +20,7 @@ layout(location=5) uniform vec2 rayOrigin;
 
 const float PI = 3.14159;
 const float STEP_MIN = 0.001f;
-const float ARC_FOCUS_INF = 1000.0f;
+const float FOCUS_INF = 1000.0f;
 
 struct HitInfo {
     float t;
@@ -28,7 +28,7 @@ struct HitInfo {
     vec2 normal;
 };
 HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v);
-HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool convex);
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool interior);
 float DistanceSq(vec2 a, vec2 b);
 
 void main()
@@ -42,8 +42,10 @@ void main()
 
     // Ray originate from (0, 0).
     vec2 ray;
-    ray.x = cos(2*PI*prog);
-    ray.y = sin(2*PI*prog);
+    //float rayAngle = 0.5*PI + 2*PI/10.0*prog;
+    float rayAngle = 2*PI*prog;
+    ray.x = cos(rayAngle);
+    ray.y = sin(rayAngle);
 
     vec2 origin = rayOrigin;
     //origin = vec2(cos(time*600), sin(time*600))*0.05;
@@ -59,13 +61,13 @@ void main()
 
         // Evaluate every mirror plane.
         for (int j = 0; j < numMirrors; j++) {
-            distances[index*numBounces+i] = vec2(1);
+            distances[index*numBounces+i] = vec2(0, 1);
             vec2 u = mirrorPoints[2*j];
             vec2 v = mirrorPoints[2*j+1];
             vec2 c = (u+v)/2;
 
             vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
-            bool doCurved = abs(arcFocus) < ARC_FOCUS_INF-1;
+            bool doCurved = abs(arcFocus) < FOCUS_INF-1;
 
             HitInfo hit;
             if (doCurved) {  
@@ -121,43 +123,40 @@ void main()
 // This function collides a ray o+td with a line uv.
 HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v) 
 {
+    HitInfo hit;
+    hit.t = -1;
+
     // The normal is a left-rotated vector.
     vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
     float nd = dot(n, d);
-
-    // We ensure that the dotproduct can't be zero
-    // by adding a small factor when its zero.
-    float t = dot(n, u-o) / (nd + float(nd==0)*0.001);
-
-    HitInfo hit;
-    hit.point = o + t*d;
+    if (nd == 0) return hit;
+    
+    hit.t = dot(n, u-o) / nd;
+    hit.point = o + hit.t*d;
     hit.normal = n;
-    hit.t = t;
     return hit;
 }
 
-HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool convex)
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool interior)
 {
-    // Make the point relative to the circle.
-    vec2 rel = o-cc;
+    HitInfo hit;
+    hit.t = -1;
 
-    float a = 1;
-    float b = 2*dot(rel, d);
-    float c = dot(rel, rel) - rsq;
-    float D = b*b - 4*a*c;
+    // Make the point relative to the circle.
+    vec2 rel = cc-o;
+    float dp = dot(rel, d);
+    float D = dp*dp + rsq - dot(rel, rel);
 
     // We take an absolute value here, but if the
     // square root ends up negative we set t to zero.
-    float sqrtD = sqrt(abs(D));
-    float t1 = (-b - sqrtD) / (2*a);
-    float t2 = (-b + sqrtD) / (2*a);
+    if (D < 0) return hit;
+    float sqrtD = sqrt(D);
+    float t1 = dp - sqrtD;
+    float t2 = dp + sqrtD;
 
-    float t = float(convex)*max(t1, t2) + (1-float(convex))*min(t1, t2);
-
-    HitInfo hit;
-    hit.point = o + t*d;
+    hit.t = float(interior)*max(t1, t2) + (1-float(interior))*min(t1, t2);
+    hit.point = o + hit.t*d;
     hit.normal = normalize(cc - hit.point);
-    hit.t = t * float(D >= 0);
     return hit;
 }
 

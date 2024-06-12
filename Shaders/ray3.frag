@@ -29,6 +29,7 @@ layout(location=9) uniform vec4 innerClearColor;
 layout(location=10) uniform vec3 edgeColor;
 uniform mat4 mvp;
 
+const float FOCUS_INF = 1000.0f;
 const float STEP_MIN = 0.001f;
 const float OUTSIDE_MARGIN = 0.001f;
 
@@ -67,7 +68,7 @@ void main()
     bool showEdgeMark = (showMarkFlags&2) == 2;
     bool showEdges = (showMarkFlags&4) == 4;
     bool hyperbolic = sphereFocus < 0;
-    bool straight = abs(sphereFocus) > 999.0f;
+    bool straight = abs(sphereFocus) > FOCUS_INF-1.0;
     bool isInBox = true;
 
     // We iterate every reflection.
@@ -105,10 +106,7 @@ void main()
                 correctSide = dot(mirror.normal.xyz, rayDir) < 0;
             }
             else {
-                vec3 cc = abs(sphereFocus) * mirror.normal.xyz;
-                if (hyperbolic) {
-                    cc = mirror.center.xyz - 2 * mirror.normal.xyz * dot(cc-mirror.center.xyz, mirror.normal.xyz);
-                }
+                vec3 cc = sphereFocus * mirror.normal.xyz;
                 float rsq = DistanceSq(cornerPoint, cc);
                 hit = RaySphereHit(rayOrigin, rayDir, cc, rsq, hyperbolic);
 

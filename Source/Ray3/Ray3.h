@@ -63,7 +63,7 @@ public:
     void RenderUpdate()
     {
         float dt = GetFrameTime();
-        program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (SPHERE_FOCUS_INF);
+        program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (FOCUS_INF);
         program.numBounces = (int)numBouncesFl;
         Ray3Scene *activeScene = &scenes[sceneIndex];
         if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
