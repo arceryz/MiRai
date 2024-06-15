@@ -7,7 +7,7 @@
 
 #define WORKGROUP_SIZE 1024
 #define MAX_MIRRORS 1000
-#define MAX_BOUNCES 16
+#define MAX_BOUNCES 32
 #define MAX_WORKGROUPS 500
 #define MAX_RAYS (MAX_WORKGROUPS*WORKGROUP_SIZE)
 
@@ -24,11 +24,12 @@ public:
     int numRays = 0;
     int numBounces = 0;
     Color color = GREEN;
-    float falloff = 0.3f;
+    float falloff = 0.2f;
     float pointSize = 1.0;
     float zoom = 1.0f;
     float cornerFactor = 0.0f;
     Vector2 origin = { 0, 0 };
+    Vector2 cameraOffset = {};
 
     // If the focus is +-INF, then we have the straight edges.
     // If the focus is positive, we enter spherical space.

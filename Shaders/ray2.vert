@@ -15,6 +15,7 @@ layout(location=4) uniform float pointSize;
 layout(location=5) uniform float zoom;
 layout(location=6) uniform vec2 rayOrigin;
 layout(location=7) uniform float cornerFactor;
+layout(location=8) uniform vec2 cameraOffset;
 
 // We will only output color.
 out vec4 fragColor;
@@ -40,7 +41,7 @@ void main()
 
     vec2 pos = vertexPosition;
     pos *= 0.01 * pointSize;
-    pos += (dist*ray + origin)*0.1*zoom;
+    pos += ((dist*ray + origin)*0.1)*zoom + cameraOffset;
     
     gl_Position = vec4(pos.xy, 0, 1);
     localPos = vertexPosition;

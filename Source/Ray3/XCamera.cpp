@@ -40,7 +40,7 @@ void XCamera::SetRadius(float rad)
 {
     Vector3 targetToPos = Vector3Subtract(internal.position, internal.target);
     internal.position = Vector3Add(internal.target, 
-        Vector3Scale(Vector3Normalize(targetToPos), Clamp(rad, 0.01f, 100.0f)));
+        Vector3Scale(Vector3Normalize(targetToPos), rad));
 }
 
 float XCamera::GetRadius()

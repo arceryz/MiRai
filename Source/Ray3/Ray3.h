@@ -21,7 +21,6 @@ private:
     float radius = 3;
     float orthoSize = 2.0f;
     bool showMesh = false;
-    bool hideGui = false;
     bool selectingModel = false;
 
     // Parameter subtitutes.
@@ -31,6 +30,9 @@ private:
     bool extremeMode = false;
     bool setInnerColor = false;
     float innerColorAlpha = 1.0f;
+
+    float radiusLerpSpeed = 10.0f;
+    float targetRadius = 3.0f;
 
 public:
     Ray3()
@@ -67,14 +69,15 @@ public:
         program.numBounces = (int)numBouncesFl;
         Ray3Scene *activeScene = &scenes[sceneIndex];
         if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
-        if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
         program.edgeColor = mainEdgeColor;
 
         float scroll = -GetMouseWheelMove();
-        float radialSpeed = 10.0f;
+        float radialSpeed = 30.0f;
         float hspeed = 35.0f;
         float vspeed = 20.0f;
-        camera->SetRadius(camera->GetRadius()*(1.0+scroll*dt*radialSpeed));
+        targetRadius = Clamp(targetRadius + scroll*dt*radialSpeed, 0.001f, 100);
+        radius = Lerp(radius, targetRadius, radiusLerpSpeed*dt);
+        camera->SetRadius(radius);
         if (!camera->perspective) camera->orthoSize = camera->orthoSize*(1.0+scroll*dt*radialSpeed);
         if (IsKeyDown(KEY_A)) camera->RotateH(-hspeed*dt);
         if (IsKeyDown(KEY_D)) camera->RotateH(+hspeed*dt);
@@ -88,7 +91,7 @@ public:
             camera->internal.position = normalvec;
         }
         if (IsKeyPressed(KEY_R)) {
-            camera->SetRadius(0);
+            targetRadius = 0;
             camera->orthoSize = 2;
         }
         if (IsKeyPressed(KEY_F)) sphereFocusPercent = 0;
@@ -98,7 +101,7 @@ public:
     void DrawGUI()
     {
         // GUI Pass.
-        if (hideGui) {
+        if (focusMode) {
              GuiSlider({ 200, 10, 400, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
              return;
         }

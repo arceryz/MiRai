@@ -10,5 +10,6 @@ extern const string modelPath;
 extern const string shaderPath;
 extern Color clearColor;
 extern Color mainEdgeColor;
+extern bool focusMode;
 
 #endif

@@ -15,6 +15,7 @@ const string modelPath = "./Models";
 const string shaderPath = "./Shaders";
 Color clearColor = BLACK;
 Color mainEdgeColor = { 0, 255, 0, 255 };
+bool focusMode = false;
 RenderTexture2D resultTexture;
   
 int main()
@@ -103,6 +104,7 @@ int main()
         if (GuiButton({ 670, 770, 110, 20 }, "Background Color")) setColor = !setColor;
         if (setColor) GuiColorPicker({ 670, 650, 85, 100 }, "Color", &clearColor);
         if (GuiButton({ 10, 770, 40, 20 }, TextFormat("%s", mode3D? "3D": "2D"))) mode3D = !mode3D;
+        if (IsKeyPressed(KEY_H) || GuiButton({ 130, 770, 60, 20 }, TextFormat("%s (H)", focusMode ? "Normal": "Focus"))) focusMode = !focusMode;
         EndDrawing();
     }
 }
