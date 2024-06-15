@@ -3,15 +3,19 @@
 #include "Ray2Program.h"
 #include <raymath.h>
 #include <rlgl.h>
+#include "main.h"
 using namespace std;
 
 Ray2Program::Ray2Program(Ray2Scene &_scene)
 : scene(_scene)
 {
-    renderProgram = LoadShader("Shaders/ray2.vert", "Shaders/ray2.frag");
+    string vertPath = shaderPath + string("/ray2.vert");
+    string fragPath = shaderPath + string("/ray2.frag");
+    string compPath = shaderPath + string("/ray2.comp");
+    renderProgram = LoadShader(vertPath.c_str(), fragPath.c_str());
     
     // Compute shader.
-    char *code = LoadFileText("Shaders/ray2.comp");
+    char *code = LoadFileText(compPath.c_str());
     int shader = rlCompileShader(code, RL_COMPUTE_SHADER);
     computeProgram = rlLoadComputeShaderProgram(shader);
     UnloadFileText(code);   
@@ -89,6 +93,7 @@ void Ray2Program::RenderPass()
     rlSetUniform(4, &pointSize, SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(5, &zoom, SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(6, &origin, SHADER_UNIFORM_VEC2, 1);
+    rlSetUniform(7, &cornerFactor, SHADER_UNIFORM_FLOAT, 1);
     rlBindShaderBuffer(distanceSSBO, 0);
 
     // Draw the particles. Instancing will duplicate the vertices.

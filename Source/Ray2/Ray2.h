@@ -50,6 +50,7 @@ public:
             scene.GenerateRandomCirclePolygon(5, 20);
         }
         if (IsKeyPressed(KEY_H)) hideGui = !hideGui;
+        if (IsKeyPressed(KEY_F)) arcFocusPercent = 0;
 
         originAngle += 45.0*delta*(IsKeyDown(KEY_D) ? -1.0: (IsKeyDown(KEY_A) ? +1.0: 0.0));
         originRadius = Clamp(originRadius+0.5*delta*(IsKeyDown(KEY_W) ? 1.0: (IsKeyDown(KEY_S) ? -1.0: 0.0)), 0, 1);
@@ -72,7 +73,7 @@ public:
         float ox = 170;
         float oy = 15;
         GuiSlider({ ox, oy, 200, 10 }, "Rays%", TextFormat("%3.1f", 100*numRaysFact), &numRaysFact, 0, 1);
-        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f (r=%.3f)", program.arcFocus, program.GetArcRadius()), &arcFocusPercent, -0.999, 1.0);
+        GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f (r=%.3f)", program.arcFocus, program.GetArcRadius()), &arcFocusPercent, -0.999, 0.999);
         GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", program.zoom), &program.zoom, 0.25, 4);
         GuiCheckBox({ ox+315, oy+15, 20, 20 }, "Draw Lines", &drawInterface);
         GuiSpinner({ ox, oy+40, 80, 15 }, "Num Bounces ", &program.numBounces, 1, MAX_BOUNCES, false);
@@ -80,8 +81,9 @@ public:
     
         ox = 660;
         oy = 13;
-        GuiSlider({ ox, oy, 100, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0.001, 1);
+        GuiSlider({ ox, oy, 100, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0.001, 0.5);
         GuiSlider({ ox, oy+20, 100, 10 }, "Point Size", TextFormat("%.2f", program.pointSize), &program.pointSize, 0.3, 3);
+        GuiSlider({ ox, oy+40, 100, 10 }, "Corner Highlight", TextFormat("%.2f", program.cornerFactor), &program.cornerFactor, 0, 1);
     }
     void DrawContent() 
     {

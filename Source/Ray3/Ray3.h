@@ -38,7 +38,7 @@ public:
         camera = new XCamera();
         camera->internal.position = { 0, 0, 4 };
 
-        FilePathList modelFiles = LoadDirectoryFiles("Models");
+        FilePathList modelFiles = LoadDirectoryFiles(modelPath.c_str());
 
         for (int i = 0; i < modelFiles.count; i++) {
             const char *path = modelFiles.paths[i];

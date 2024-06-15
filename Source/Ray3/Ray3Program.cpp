@@ -5,7 +5,9 @@
 
 Ray3Program::Ray3Program()
 {
-    shader = LoadShader("Shaders/ray3.vert", "Shaders/ray3.frag");
+    string vertPath = shaderPath + string("/ray3.vert");
+    string fragPath = shaderPath + string("/ray3.frag");
+    shader = LoadShader(vertPath.c_str(), fragPath.c_str());
     renderTexture = LoadRenderTexture(800, 800);
 }
 void Ray3Program::SetScene(Ray3Scene *_scene)

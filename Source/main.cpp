@@ -11,15 +11,33 @@
 #define WORKGROUP_SIZE 1024
 #define MAX_POLYGON_POINTS 100
 
+const string modelPath = "./Models";
+const string shaderPath = "./Shaders";
 Color clearColor = BLACK;
 Color mainEdgeColor = { 0, 255, 0, 255 };
 RenderTexture2D resultTexture;
-
+  
 int main()
 {
     SetTraceLogLevel(LOG_ERROR);
     SetTargetFPS(144);
     InitWindow(800, 800, "Mirai R");
+
+    // Error handling. Check required directories.
+    string error = "";
+    if (!DirectoryExists(shaderPath.c_str())) error = string("Could not find shader directory ") + shaderPath;
+    if (!DirectoryExists(modelPath.c_str())) error = string("Could not find model directory ") + modelPath;
+    if (error.length() > 0) {
+        while (!WindowShouldClose()) {
+            BeginDrawing();
+            ClearBackground(WHITE);
+            if ((int)(GetTime()*2.0) % 2 == 0) DrawText(error.c_str(), 10, 10, 20, RED);
+            EndDrawing();
+            continue;
+        }
+        return 0;
+    }
+    
     printf("Starting up MiRai.\n");
     Ray2 ray2;
     Ray3 ray3;
@@ -45,11 +63,16 @@ int main()
         BeginTextureMode(resultTexture);
         ClearBackground({ 0, 0, 0, 0 });
         
-        rlSetBlendFactorsSeparate(
-            RL_SRC_ALPHA, RL_ONE_MINUS_SRC_ALPHA, 
-            RL_ONE, RL_ONE_MINUS_SRC_ALPHA, 
-            RL_FUNC_ADD, RL_FUNC_ADD);
         BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+        if (mode3D) {
+            rlSetBlendFactorsSeparate(
+                RL_SRC_ALPHA, RL_ONE_MINUS_SRC_ALPHA, 
+                RL_ONE, RL_ONE_MINUS_SRC_ALPHA, 
+                RL_FUNC_ADD, RL_FUNC_ADD);
+        }
+        else {
+            rlSetBlendFactorsSeparate(RL_ONE, RL_ONE, RL_ONE, RL_ONE, RL_MAX, RL_MAX);
+        }
         
         if (mode3D) ray3.DrawContent();
         else ray2.DrawContent();

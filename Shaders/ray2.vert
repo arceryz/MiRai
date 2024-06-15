@@ -14,6 +14,7 @@ layout(location=3) uniform float falloff;
 layout(location=4) uniform float pointSize;
 layout(location=5) uniform float zoom;
 layout(location=6) uniform vec2 rayOrigin;
+layout(location=7) uniform float cornerFactor;
 
 // We will only output color.
 out vec4 fragColor;
@@ -32,19 +33,19 @@ void main()
 
     // Ray originate from (0, 0).
     vec2 ray;
-    //float rayAngle = 0.5*PI + 2*PI/10.0*prog;
     float rayAngle = 2*PI*prog;
-    ray.x = dist*cos(rayAngle);
-    ray.y = dist*sin(rayAngle);
+    ray.x = cos(rayAngle);
+    ray.y = sin(rayAngle);
+    vec2 origin = rayOrigin;
 
     vec2 pos = vertexPosition;
     pos *= 0.01 * pointSize;
-    pos += (ray + rayOrigin)*0.1*zoom;
+    pos += (dist*ray + origin)*0.1*zoom;
     
     gl_Position = vec4(pos.xy, 0, 1);
     localPos = vertexPosition;
 
     float fade = pow(1.0-falloff, depth);
-    //fade *= 0.3+0.7*float(dmin<0.1);
+    fade *= mix(1.0, float(dmin<0.1), cornerFactor);
     fragColor = vec4(color, fade);
 }
