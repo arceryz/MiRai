@@ -53,7 +53,7 @@ public:
         program.origin = { originRadius*cosf(DEG2RAD*originAngle), originRadius*sinf(DEG2RAD*originAngle) };
 
         // Set camera offset.
-        DragCameraUpdate(camera, zoomTarget, centeredZoom, 0.01, 4.0, 0.4, 10.0, 200.0);
+        DragCameraUpdate(camera, zoomTarget, centeredZoom, 0.01, 16.0, 0.4, 10.0, 200.0);
         Vector2 screen = GetWorldToScreen2D({ 400, 400 }, camera);
         Vector2 rel = { -(400-screen.x)/400.0, (400-screen.y)/400.0 };
         program.cameraOffset = rel;
@@ -95,7 +95,7 @@ public:
         float oy = 15;
         GuiSlider({ ox, oy, 200, 10 }, "Rays%", TextFormat("%3.1f", 100*numRaysFact), &numRaysFact, 0, 1);
         GuiSlider({ ox, oy+20, 200, 10 }, "Focus", TextFormat("%.2f (r=%.3f)", program.arcFocus, program.GetArcRadius()), &arcFocusPercent, -0.999, 0.999);
-        GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", program.zoom), &program.zoom, 0.1, 4);
+        GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", zoomTarget), &zoomTarget, 0.1, 16);
         GuiCheckBox({ ox+315, oy+15, 20, 20 }, "Draw Lines", &drawInterface);
         GuiSpinner({ ox, oy+40, 80, 15 }, "Num Bounces ", &program.numBounces, 1, MAX_BOUNCES, false);
         GuiSpinner({ ox+130, oy+40, 80, 15 }, "Shape ", &shape, 3, 10, false);
