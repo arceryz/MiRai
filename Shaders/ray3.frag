@@ -27,6 +27,7 @@ layout(location=7) uniform int showMarkFlags;
 layout(location=8) uniform float markSize;
 layout(location=9) uniform vec4 innerClearColor;
 layout(location=10) uniform vec3 edgeColor;
+layout(location=11) uniform int lowerBounceLimit;
 uniform mat4 mvp;
 
 const float FOCUS_INF = 1000.0f;
@@ -158,7 +159,7 @@ void main()
         }
 
         // Edge collision.
-        if (minHit.t > 0 && minEdgeProj < edgeThickness && (showEdges || (showEdgeMark && mirrorIndex == 0))) {
+        if (b >= lowerBounceLimit && minHit.t > 0 && minEdgeProj < edgeThickness && (showEdges || (showEdgeMark && mirrorIndex == 0))) {
             vec3 colors[] = {
                 vec3(1, 0, 0),
                 edgeColor,

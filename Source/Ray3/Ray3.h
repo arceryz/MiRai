@@ -26,6 +26,7 @@ private:
     // Parameter subtitutes.
     float sphereFocusPercent = 0.0f;
     float numBouncesFl = 10;
+    float lowerBounceFl = 0.0f;
     int sceneIndex = 0;
     bool extremeMode = false;
     bool setInnerColor = false;
@@ -67,6 +68,7 @@ public:
         float dt = GetFrameTime();
         program.sphereFocus = (sphereFocusPercent > 0 ? 1: -1) * powf(1-abs(sphereFocusPercent), 8) * (FOCUS_INF);
         program.numBounces = (int)numBouncesFl;
+        program.lowerBounceLimit = (int)lowerBounceFl;
         Ray3Scene *activeScene = &scenes[sceneIndex];
         if (program.GetScene() != activeScene) { program.SetScene(activeScene); };
         program.edgeColor = mainEdgeColor;
@@ -136,6 +138,7 @@ public:
         GuiSlider({ 170, 10, 200, 10 }, "Edge Size", TextFormat("%.1f", program.edgeThickness), &program.edgeThickness, 0.1f, 10.0);
         GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
         GuiSlider({ 170, 50, 200, 10 }, "Num Bounces", TextFormat("%d", program.numBounces), &numBouncesFl, 0, extremeMode ? 100: 20);
+        GuiSlider({ 170, 70, 200, 10 }, "Start Bounce", TextFormat("%d", program.lowerBounceLimit), &lowerBounceFl, 0, extremeMode ? 100: 20);
         GuiSlider({ 170+300, 10, 190, 10 }, "Resolution%", TextFormat("%.2f", program.resolutionPercent), &program.resolutionPercent, 0, 1);
         GuiSlider({ 170+300, 30, 190, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0, 0.999f);
         GuiSlider({ 170+300, 50, 190, 10 }, "Mark Size", TextFormat("%.2f", program.markSize), &program.markSize, 0.1f, 10.0f);

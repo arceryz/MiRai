@@ -23,6 +23,7 @@ class Ray2Program
 public:
     int numRays = 0;
     int numBounces = 0;
+    int bounceStart = 0;
     Color color = GREEN;
     float falloff = 0.2f;
     float pointSize = 1.0;

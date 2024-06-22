@@ -17,6 +17,7 @@ class Ray3Program
 public:
     int numMirrors = 0;
     int numBounces = 5;
+    int lowerBounceLimit = 0;
     Color color = GREEN;
     float sphereFocus = FOCUS_INF;
     float edgeThickness = 1.0f;

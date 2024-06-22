@@ -74,6 +74,7 @@ void Ray3Program::Render(Camera3D camera)
     SetShaderValue(shader, 9, &innerColorNorm, SHADER_UNIFORM_VEC4);
     Vector4 edgeColorNorm = ColorNormalize(edgeColor);
     SetShaderValue(shader, 10, &edgeColorNorm, SHADER_UNIFORM_VEC3);
+    SetShaderValue(shader, 11, &lowerBounceLimit, SHADER_UNIFORM_INT);
 
     // Draw to custom render target first and then scale the result.
     rlViewport(0, 0, resolution, resolution);

@@ -98,6 +98,7 @@ public:
         GuiSlider({ ox+270, oy, 100, 10 }, "Zoom", TextFormat("%.1f", zoomTarget), &zoomTarget, 0.1, 16);
         GuiCheckBox({ ox+315, oy+15, 20, 20 }, "Draw Lines", &drawInterface);
         GuiSpinner({ ox, oy+40, 80, 15 }, "Num Bounces ", &program.numBounces, 1, MAX_BOUNCES, false);
+        GuiSpinner({ ox, oy+60, 80, 15 }, "Start Bounce ", &program.bounceStart, 0, MAX_BOUNCES, false);
         GuiSpinner({ ox+130, oy+40, 80, 15 }, "Shape ", &shape, 3, 10, false);
     
         ox = 660;
