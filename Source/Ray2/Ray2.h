@@ -72,7 +72,7 @@ public:
     }
     void GenerateRandom()
     {
-        scene.GenerateRandomCirclePolygon(5, 20);
+        scene.GenerateRandomCirclePolygon(shape, 20);
     }
     void SetFlat()
     {
@@ -106,6 +106,8 @@ public:
         GuiSlider({ ox, oy, 100, 10 }, "Falloff", TextFormat("%.2f", program.falloff), &program.falloff, 0.001, 0.5);
         GuiSlider({ ox, oy+20, 100, 10 }, "Point Size", TextFormat("%.2f", program.pointSize), &program.pointSize, 0.3, 3);
         GuiSlider({ ox, oy+40, 100, 10 }, "Corner Highlight", TextFormat("%.2f", program.cornerFactor), &program.cornerFactor, 0, 1);
+        GuiSlider({ ox, oy+60, 100, 10 }, "Corner Size", TextFormat("%.2f", program.cornerSize), &program.cornerSize, 0, 1);
+        oy += 10;
         if (GuiButton({ ox+40, oy+70, 80, 20 }, "Center (C) ")) CenterView();
         if (GuiButton({ ox+40, oy+100, 80, 20 }, "Random (R)")) GenerateRandom();
         if (GuiButton({ ox+40, oy+130, 80, 20 }, "Flat (F)")) SetFlat();

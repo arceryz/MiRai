@@ -43,9 +43,9 @@ void Ray2Scene::GenerateRandomCirclePolygon(int n, float minSpacing)
         sort(angles.begin(), angles.end());
         bool valid = true;
         for (int i = 0; i < n; i++) {
-            if (abs(angles[(i+1)%n] - angles[i]) < minSpacing) {
+            float diff = abs(angles[(i+1)%n] - angles[i]);
+            if (diff < minSpacing) {
                 valid = false;
-                break;
             }
         }
         if (valid) break;

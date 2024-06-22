@@ -76,6 +76,7 @@ void Ray2Program::ComputePass()
     rlSetUniform(4, &time, SHADER_UNIFORM_FLOAT, 1);
     rlSetUniform(5, &origin, SHADER_UNIFORM_VEC2, 1);
     rlSetUniform(6, &bounceStart, SHADER_UNIFORM_INT, 1);
+    rlSetUniform(7, &cornerSize, SHADER_UNIFORM_FLOAT, 1);
 
     rlBindShaderBuffer(mirrorSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);

@@ -18,6 +18,7 @@ layout(location=3) uniform float arcFocus;
 layout(location=4) uniform float time;
 layout(location=5) uniform vec2 rayOrigin;
 layout(location=6) uniform int bounceStart;
+layout(location=7) uniform float cornerSize;
 
 const float PI = 3.14159;
 const float STEP_MIN = 0.001f;
@@ -51,6 +52,10 @@ void main()
     vec2 origin = rayOrigin;
     //origin = vec2(cos(time*600), sin(time*600))*0.05;
     bool hyperbolic = arcFocus < 0;
+
+    for (int i = 0; i < numBounces; i++) {
+        distances[index*numBounces+i] =  vec2(0);
+    }
 
     // Trace all bounces and store the distance at each collision.
     float travelled = 0;
@@ -115,12 +120,10 @@ void main()
                 vec2 dvec = vec2(travelled, sqrt(dminsq));
                 distances[index*numBounces+i] = dvec;
             }
-            else {
-                distances[index*numBounces+i] =  vec2(0);
-            }
+            if (dminsq < cornerSize*cornerSize && cornerSize > 0) break;
         } 
         else {
-            distances[index*numBounces+i] =  vec2(0);
+            break;
         }
     }
 

@@ -28,6 +28,7 @@ public:
     float falloff = 0.2f;
     float pointSize = 1.0;
     float zoom = 1.0f;
+    float cornerSize = 0.0f;
     float cornerFactor = 0.0f;
     Vector2 origin = { 0, 0 };
     Vector2 cameraOffset = {};
