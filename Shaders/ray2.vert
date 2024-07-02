@@ -27,7 +27,8 @@ void main()
 {
     vec2 dvec = distances[gl_InstanceID];
     float dist = dvec.x;
-    float dmin = dvec.y;
+    float dmin = abs(dvec.y);
+    bool isTarget = dvec.y < 0;
 
     int depth = gl_InstanceID % numBounces;
     float prog = float(gl_InstanceID/numBounces) / numRays;
@@ -47,6 +48,6 @@ void main()
     localPos = vertexPosition;
 
     float fade = pow(1.0-falloff, depth);
-    fade *= mix(1.0, float(dmin<0.1), cornerFactor);
-    fragColor = vec4(color, fade);
+    fade *= isTarget ? 1.0 : mix(1.0, float(dmin<0.1), cornerFactor);
+    fragColor = vec4(isTarget ? vec3(0, 0, 1) : color, fade);
 }

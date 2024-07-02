@@ -32,6 +32,8 @@ public:
     float cornerFactor = 0.0f;
     Vector2 origin = { 0, 0 };
     Vector2 cameraOffset = {};
+    Vector2 targetPosition = { 0.5, 0 };
+    float targetSize = 0;
 
     // If the focus is +-INF, then we have the straight edges.
     // If the focus is positive, we enter spherical space.
@@ -47,6 +49,7 @@ public:
     void InterfacePass();
     float GetArcRadius();
     Vector2 Transform(Vector2 local);
+    Vector2 InvTransform(Vector2 world);
 
 private:
     ShaderBuffer mirrorSSBO = 0;

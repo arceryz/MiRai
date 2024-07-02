@@ -83,8 +83,10 @@ int main()
 
         // Step 3. Render to screen.
         DrawTexturePro(resultTexture.texture, { 0, 0, 800, -800 }, { 0, 0, 800, 800 }, {}, 0, WHITE);
-        if (mode3D) ray3.DrawGUI(); 
-        else ray2.DrawGUI();
+        if (!exportMode) {
+            if (mode3D) ray3.DrawGUI(); 
+            else ray2.DrawGUI();
+        }
 
         if (GuiButton({ 60, 770, 60, 20 }, "Save As")) exportMode = !exportMode; 
         if (exportMode) {

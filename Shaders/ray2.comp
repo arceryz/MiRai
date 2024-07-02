@@ -19,6 +19,8 @@ layout(location=4) uniform float time;
 layout(location=5) uniform vec2 rayOrigin;
 layout(location=6) uniform int bounceStart;
 layout(location=7) uniform float cornerSize;
+layout(location=8) uniform vec2 targetPosition;
+layout(location=9) uniform float targetSize;
 
 const float PI = 3.14159;
 const float STEP_MIN = 0.001f;
@@ -51,7 +53,7 @@ void main()
 
     vec2 origin = rayOrigin;
     //origin = vec2(cos(time*600), sin(time*600))*0.05;
-    bool hyperbolic = arcFocus < 0;
+    bool hyperbolic = arcFocus > 0;
 
     for (int i = 0; i < numBounces; i++) {
         distances[index*numBounces+i] =  vec2(0);
@@ -77,7 +79,7 @@ void main()
 
             HitInfo hit;
             if (doCurved) {  
-                vec2 arc = n*arcFocus;
+                vec2 arc = n*-arcFocus;
                 float rsq = dot(arc-u, arc-u);
                 hit = RayCircleHit(origin, ray, arc, rsq, !hyperbolic);
             }
@@ -95,7 +97,7 @@ void main()
             // Validity consists of proper step size. Point lying in between the two edges and
             // for circles the point must also lie in the proper direction.
             // focus > 0 then dot < 0, focus < 0 then dot > 0. I.e opposing sign.
-            bool validity = hit.t > STEP_MIN && (0 <= pdir && pdir <= 1) && (pnormal*arcFocus <= 0 || !doCurved);
+            bool validity = hit.t > STEP_MIN && (0 <= pdir && pdir <= 1) && (pnormal*arcFocus >= 0 || !doCurved);
 
             if (validity && (hitmin.t < 0 || hit.t < hitmin.t)) {
                 hitmin = hit;
@@ -104,6 +106,16 @@ void main()
             }
         }
         
+        // Object.
+        if (targetSize > 0) {
+            HitInfo tgtHit = RayCircleHit(origin, ray, targetPosition, pow(targetSize, 2), false);
+            if (tgtHit.t > 0 && (tgtHit.t < hitmin.t || hitmin.t <= 0)) {
+                distances[index*numBounces+i] = vec2(travelled+tgtHit.t, -1);
+                if (i < numBounces-1) i+= 1;
+                else break;
+            }
+        }
+
         // Only do something if there is a hit.
         if (hitmin.t > 0) {
             // Reflect.

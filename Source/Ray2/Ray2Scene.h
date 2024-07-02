@@ -19,6 +19,10 @@ public:
     Ray2Scene();
     void GenerateRegularPolygon(int n);
     void GenerateRandomCirclePolygon(int n, float minSpacing=0);
+    void GenerateTriangle(float alpha, float beta, float gamma);
+    void GenerateNiceRhombus();
+    void GenerateTokarsky();
+    void Center();
     void Clear();
     void AddMirrorStrip(vector<Vector2> &strip);
 };

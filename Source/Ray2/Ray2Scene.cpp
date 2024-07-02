@@ -71,3 +71,85 @@ void Ray2Scene::AddMirrorStrip(vector<Vector2> &strip)
     }
     dirty = true;
 }
+
+void Ray2Scene::Center()
+{
+    Vector2 sum = {};
+    for (Vector2 vec: mirrors) {
+        sum = Vector2Add(sum, vec);
+    }
+    sum = Vector2Scale(sum, 1.0f/mirrors.size());
+    for (int i = 0; i < mirrors.size(); i++) {
+        mirrors[i] = Vector2Subtract(mirrors[i], sum);
+    }
+}
+
+void Ray2Scene::GenerateTriangle(float alpha, float beta, float gamma)
+{
+    float sina = sinf(alpha);
+    float sinb = sinf(beta);
+    float sinc = sinf(gamma);
+
+    float A = 1;
+    float B = sinb / sina;
+    float C = sinc / sina;
+
+    Vector2 c = { (A + C*cos(beta)) / 3.0, C*sin(beta) / 3.0 };
+    
+    Vector2 v1 = { 0, 0 };
+    Vector2 v2 = { A, 0 };
+    Vector2 v3 = { C*cos(beta), C*sin(beta) };
+
+    vector<Vector2> verts = { v1, v2, v3 };
+    Clear();
+    AddMirrorStrip(verts);
+    Center();
+}
+
+void Ray2Scene::GenerateNiceRhombus()
+{
+    float ang = 2.0*PI/3.0;
+    Vector2 v1 = { 0, 0 };
+    Vector2 v2 = { cosf(ang), sinf(ang) };
+    Vector2 v3 = { v2.x + 1.0, v2.y };
+    Vector2 v4 = { 1.0, 0.0 };
+    vector<Vector2> verts = { v1, v2, v3, v4 };
+    Clear();
+    AddMirrorStrip(verts);
+    Center();
+}
+
+void Ray2Scene::GenerateTokarsky()
+{
+    vector<Vector2> verts = {
+        { -1, 0 },
+        { 1, 0 },
+        { 1, 1 },
+        { 2, 2 },
+        { 2, 1 },
+        { 3, 1 },
+        { 3, 0 },
+        { 4, 0 },
+        { 3, -1 },
+        { 2, -1 },
+        { 2, -2 },
+        { 1, -1 },
+        { 0, -1 },
+        { 0, -2 },
+        { -1, -1 },
+        { -2, -1 },
+        { -2, -2 },
+        { -3, -1 },
+        { -3, 0 },
+        { -4, 0 },
+        { -3, 1 },
+        { -2, 1 },
+        { -2, 2 },
+        { -1, 1 },
+        { -1, 0 }
+    };
+    reverse(verts.begin(), verts.end());
+    Clear();
+    AddMirrorStrip(verts);
+    Center();
+}

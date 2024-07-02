@@ -77,6 +77,8 @@ void Ray2Program::ComputePass()
     rlSetUniform(5, &origin, SHADER_UNIFORM_VEC2, 1);
     rlSetUniform(6, &bounceStart, SHADER_UNIFORM_INT, 1);
     rlSetUniform(7, &cornerSize, SHADER_UNIFORM_FLOAT, 1);
+    rlSetUniform(8, &targetPosition, SHADER_UNIFORM_VEC2, 1);
+    rlSetUniform(9, &targetSize, SHADER_UNIFORM_FLOAT, 1);
 
     rlBindShaderBuffer(mirrorSSBO, 0);
     rlBindShaderBuffer(distanceSSBO, 1);
@@ -126,8 +128,16 @@ Vector2 Ray2Program::Transform(Vector2 local)
 {
     Vector2 pos = Vector2Scale(local, 0.1);
     return {
-        (float)((pos.x+1.0)/2.0*GetScreenWidth()),
-        (float)((-pos.y+1.0)/2.0*GetScreenHeight())
+        (float)((pos.x+1.0)/2.0*800.0f),
+        (float)((-pos.y+1.0)/2.0*800.0f)
+    };
+}
+
+Vector2 Ray2Program::InvTransform(Vector2 screen)
+{
+    return {
+        (float)(screen.x * 2.0f / 800.0f - 1.0f) * 10.0f,
+        -(float)(screen.y * 2.0f / 800.0f - 1.0f) * 10.0f
     };
 }
 
