@@ -104,7 +104,7 @@ public:
     {
         // GUI Pass.
         if (focusMode) {
-             GuiSlider({ 200, 10, 400, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
+             GuiSlider({ 200, 10, 400, 10 }, "Sphere Focus", TextFormat("%.3f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
              return;
         }
 
@@ -135,8 +135,8 @@ public:
             }
         }
 
-        GuiSlider({ 170, 10, 200, 10 }, "Edge Size", TextFormat("%.1f", program.edgeThickness), &program.edgeThickness, 0.1f, 10.0);
-        GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.1f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
+        GuiSlider({ 170, 10, 200, 10 }, "Edge Size", TextFormat("%.2f", program.edgeThickness), &program.edgeThickness, 0.1f, 10.0);
+        GuiSlider({ 170, 30, 200, 10 }, "Sphere Focus", TextFormat("%.3f", program.sphereFocus), &sphereFocusPercent, -0.999, 1);  
         GuiSlider({ 170, 50, 200, 10 }, "Num Bounces", TextFormat("%d", program.numBounces), &numBouncesFl, 0, extremeMode ? 100: 20);
         GuiSlider({ 170, 70, 200, 10 }, "Start Bounce", TextFormat("%d", program.lowerBounceLimit), &lowerBounceFl, 0, extremeMode ? 100: 20);
         GuiSlider({ 170+300, 10, 190, 10 }, "Resolution%", TextFormat("%.2f", program.resolutionPercent), &program.resolutionPercent, 0, 1);

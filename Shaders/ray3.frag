@@ -68,7 +68,7 @@ void main()
     bool showMark = (showMarkFlags&1) == 1;
     bool showEdgeMark = (showMarkFlags&2) == 2;
     bool showEdges = (showMarkFlags&4) == 4;
-    bool hyperbolic = sphereFocus < 0;
+    bool hyperbolic = sphereFocus > 0;
     bool straight = abs(sphereFocus) > FOCUS_INF-1.0;
     bool isInBox = true;
 
@@ -107,7 +107,7 @@ void main()
                 correctSide = dot(mirror.normal.xyz, rayDir) < 0;
             }
             else {
-                vec3 cc = sphereFocus * mirror.normal.xyz;
+                vec3 cc = sphereFocus * -mirror.normal.xyz;
                 float rsq = DistanceSq(cornerPoint, cc);
                 hit = RaySphereHit(rayOrigin, rayDir, cc, rsq, hyperbolic);
 
