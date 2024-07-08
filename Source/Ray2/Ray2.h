@@ -11,7 +11,7 @@
 // This class contains the Ray2 running/UI code.
 class Ray2 
 {
-private:
+public:
     Ray2Scene scene;
     Ray2Program program;
     Camera2D camera = {};
@@ -39,12 +39,6 @@ public:
         camera.offset = { 400, 400 };
         camera.target = { 400, 400 };
         camera.zoom = 1.0;
-
-        //scene.GenerateTriangle(PI/2.0, PI/4, PI/4);
-        //scene.GenerateTriangle(PI/2, PI/3, PI/6);
-        //scene.GenerateTriangle(2*PI/3, PI/6, PI/6);
-        //scene.GenerateNiceRhombus();
-        scene.GenerateTokarsky();
     };
     void RenderUpdate()
     {
@@ -119,6 +113,14 @@ public:
         if (IsKeyPressed(KEY_F)) SetFlat();
         if (IsKeyPressed(KEY_I)) SetImageAlignCurvature();
         if (IsKeyPressed(KEY_O)) SetInternalAlignCurvature();
+
+        if (IsKeyDown(KEY_LEFT_SHIFT)) {
+            if (IsKeyPressed(KEY_ONE)) scene.GenerateTriangle(PI/2.0, PI/4, PI/4);
+            if (IsKeyPressed(KEY_TWO)) scene.GenerateTriangle(PI/2, PI/3, PI/6);
+            if (IsKeyPressed(KEY_THREE)) scene.GenerateTriangle(2*PI/3, PI/6, PI/6);
+            if (IsKeyPressed(KEY_FOUR)) scene.GenerateNiceRhombus();
+            if (IsKeyPressed(KEY_FIVE)) scene.GenerateTokarsky();
+        }
         
         if (focusMode) {
              GuiSlider({ 200, 10, 400, 10 }, "Arc Focus", TextFormat("%.1f", program.arcFocus), &arcFocusPercent, -0.999, 1);  

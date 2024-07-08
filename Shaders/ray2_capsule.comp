@@ -1,0 +1,159 @@
+// We require version 430 since it supports compute shaders.
+#version 430
+
+// This is the workgroup size. The largest size that is guaranteed by OpenGL 
+// to available is 1024, beyond this is uncertain.
+// Might influence performance but only in advanced cases.
+layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+
+// Two buffers are here.
+// The ray ssbo is packed per bounce, ie numRays * numBounces.
+layout(std430, binding=0) buffer mirrorSSBO {  vec2 mirrorPoints[]; };
+layout(std430, binding=1) buffer distanceSSBO { vec2 distances[]; };
+
+layout(location=0) uniform int numRays;
+layout(location=1) uniform int numBounces;
+layout(location=2) uniform int numMirrors;
+layout(location=3) uniform float arcFocus;
+layout(location=4) uniform float time;
+layout(location=5) uniform vec2 rayOrigin;
+layout(location=6) uniform int bounceStart;
+layout(location=7) uniform float cornerSize;
+layout(location=8) uniform vec2 targetPosition;
+layout(location=9) uniform float targetSize;
+
+const float PI = 3.14159;
+const float STEP_MIN = 0.001f;
+const float FOCUS_INF = 1000.0f;
+
+struct HitInfo {
+    float t;
+    vec2 point;
+    vec2 normal;
+};
+HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v);
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool interior);
+float DistanceSq(vec2 a, vec2 b);
+
+void main()
+{
+    // Index represents the point that we are casting.
+    // This ranges from 0 to numRays.
+    // We write distances for each particle at the numBounces consecutive positions.
+    // That way we have multiple depth layers.
+    uint index = gl_GlobalInvocationID.x;
+    float prog = float(index) / numRays;
+
+    // Ray originate from (0, 0).
+    vec2 ray;
+    //float rayAngle = 0.5*PI + 2*PI/10.0*prog;
+    float rayAngle = 2*PI*prog;
+    ray.x = cos(rayAngle);
+    ray.y = sin(rayAngle);
+
+    vec2 origin = rayOrigin;
+    //origin = vec2(cos(time*600), sin(time*600))*0.05;
+    bool hyperbolic = arcFocus > 0;
+
+    for (int i = 0; i < numBounces; i++) {
+        distances[index*numBounces+i] =  vec2(0);
+    }
+
+    // Trace all bounces and store the distance at each collision.
+    float travelled = 0;
+    for (int i = 0; i < numBounces; i++) {
+        HitInfo hitmin;
+        hitmin.t = -1;
+        vec2 umin = vec2(0);
+        vec2 vmin = vec2(0);
+
+        // Evaluate up and down axis and two half circles.
+        HitInfo topline = RayLineHit(origin, ray, vec2(0.5, 0.5), vec2(-0.5, 0.5));
+        if ((hitmin.t < 0 || topline.t < hitmin.t) && topline.t > STEP_MIN) hitmin = topline;
+        HitInfo botline = RayLineHit(origin, ray, vec2(-0.5, -0.5), vec2(0.5, -0.5));
+        if ((hitmin.t < 0 || botline.t < hitmin.t) && botline.t > STEP_MIN) hitmin = botline;
+
+        HitInfo lsphere = RayCircleHit(origin, ray, vec2(-0.5, 0), 0.5*0.5, true);
+        if ((hitmin.t < 0 || lsphere.t < hitmin.t) && lsphere.t > STEP_MIN && lsphere.point.x < -0.5) hitmin = lsphere;
+        HitInfo rsphere = RayCircleHit(origin, ray, vec2(0.5, 0), 0.5*0.5, true);
+        if ((hitmin.t < 0 || rsphere.t < hitmin.t) && rsphere.t > STEP_MIN && rsphere.point.x > 0.5) hitmin = rsphere;
+
+        // Object.
+        if (targetSize > 0) {
+            HitInfo tgtHit = RayCircleHit(origin, ray, targetPosition, pow(targetSize, 2), false);
+            if (tgtHit.t > 0 && (tgtHit.t < hitmin.t || hitmin.t <= 0)) {
+                distances[index*numBounces+i] = vec2(travelled+tgtHit.t, -1);
+                if (i < numBounces-1) i+= 1;
+                else break;
+            }
+        }
+
+        // Only do something if there is a hit.
+        if (hitmin.t > 0) {
+            // Reflect.
+            ray = ray - 2*hitmin.normal*dot(hitmin.normal, ray);
+            origin = hitmin.point;
+            travelled += hitmin.t;
+
+            // Compute shortest distance to mirror plane corners.
+            float dminsq = min(DistanceSq(umin, origin), DistanceSq(vmin, origin));
+
+            // Write at bounce dependent index.
+            // If numbounces changes, then the stride grows with it.
+            if (i >= bounceStart) {
+                vec2 dvec = vec2(travelled, sqrt(dminsq));
+                distances[index*numBounces+i] = dvec;
+            }
+            if (dminsq < cornerSize*cornerSize && cornerSize > 0) break;
+        } 
+        else {
+            break;
+        }
+    }
+
+}
+
+// This function collides a ray o+td with a line uv.
+HitInfo RayLineHit(vec2 o, vec2 d, vec2 u, vec2 v) 
+{
+    HitInfo hit;
+    hit.t = -1;
+
+    // The normal is a left-rotated vector.
+    vec2 n = normalize(vec2(-v.y+u.y, v.x-u.x));
+    float nd = dot(n, d);
+    if (nd == 0) return hit;
+    
+    hit.t = dot(n, u-o) / nd;
+    hit.point = o + hit.t*d;
+    hit.normal = n;
+    return hit;
+}
+
+HitInfo RayCircleHit(vec2 o, vec2 d, vec2 cc, float rsq, bool interior)
+{
+    HitInfo hit;
+    hit.t = -1;
+
+    // Make the point relative to the circle.
+    vec2 rel = cc-o;
+    float dp = dot(rel, d);
+    float D = dp*dp + rsq - dot(rel, rel);
+
+    // We take an absolute value here, but if the
+    // square root ends up negative we set t to zero.
+    if (D < 0) return hit;
+    float sqrtD = sqrt(D);
+    float t1 = dp - sqrtD;
+    float t2 = dp + sqrtD;
+
+    hit.t = float(interior)*max(t1, t2) + (1-float(interior))*min(t1, t2);
+    hit.point = o + hit.t*d;
+    hit.normal = normalize(cc - hit.point);
+    return hit;
+}
+
+float DistanceSq(vec2 a, vec2 b)
+{
+    return dot(a-b, a-b);
+}

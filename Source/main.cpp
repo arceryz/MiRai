@@ -23,6 +23,7 @@ int main()
     SetTraceLogLevel(LOG_ERROR);
     SetTargetFPS(144);
     InitWindow(800, 800, "Mirai R");
+    SetExitKey(999999999);
 
     // Error handling. Check required directories.
     string error = "";
@@ -58,6 +59,16 @@ int main()
         if (!exportMode) {
             if (mode3D) ray3.RenderUpdate();
             else ray2.RenderUpdate();
+            if (IsKeyPressed(KEY_M)) {
+                mainEdgeColor = { 10, 10, 10, 255 };
+                clearColor = WHITE;
+                ray3.program.innerClearColor = WHITE;
+                ray3.program.edgeThickness = 2.5;
+                ray3.program.dynamicResolution = false;
+                ray3.program.resolutionPercent = 1.0;
+                ray2.program.falloff = 0;
+                ray2.numRaysFact = 0.7;
+            }
         }
 
         // Step 2. Render to output texture.

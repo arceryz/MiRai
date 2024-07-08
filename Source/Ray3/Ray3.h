@@ -9,7 +9,7 @@
 
 class Ray3
 {
-private:
+public:
     XCamera *camera;
     vector<Ray3Scene> scenes;
     Ray3Program program;
@@ -63,6 +63,11 @@ public:
         }
         program.SetScene(&scenes[0]);
     }
+    void SetLambda(float lambda)
+    {
+        float f = (lambda > 0 ? 1: -1) * (1.0-powf(abs(lambda) / FOCUS_INF, 1.0/8.0));   
+        sphereFocusPercent = f;
+    }
     void RenderUpdate()
     {
         float dt = GetFrameTime();
@@ -95,6 +100,12 @@ public:
         if (IsKeyPressed(KEY_R)) {
             targetRadius = 0;
             camera->orthoSize = 2;
+        }
+        if (IsKeyPressed(KEY_O)) {
+            if (activeScene->name == "Dodecahedron") SetLambda(-15.6483);
+        }
+        if (IsKeyPressed(KEY_I)) {
+            if (activeScene->name == "Dodecahedron") SetLambda(-11.4686);
         }
         if (IsKeyPressed(KEY_F)) sphereFocusPercent = 0;
         camera->Update();
