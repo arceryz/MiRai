@@ -60,9 +60,9 @@ int main()
             if (mode3D) ray3.RenderUpdate();
             else ray2.RenderUpdate();
             if (IsKeyPressed(KEY_M)) {
-                mainEdgeColor = { 10, 10, 10, 255 };
-                clearColor = WHITE;
-                ray3.program.innerClearColor = WHITE;
+                //mainEdgeColor = { 10, 10, 10, 255 };
+                //clearColor = WHITE;
+                //ray3.program.innerClearColor = WHITE;
                 ray3.program.edgeThickness = 2.5;
                 ray3.program.dynamicResolution = false;
                 ray3.program.resolutionPercent = 1.0;
