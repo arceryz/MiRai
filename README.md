@@ -11,6 +11,8 @@ The purpose of this project is to analyse the patterns from mirror reflections i
 
 ---
 
+[Thesis Paper on TUD Repository](https://repository.tudelft.nl/record/uuid:88b35eaf-20fe-442f-b720-8965fc8b4994)
+
 This mirror raytracer works with scenes that are described by 2D lines or 3D polygons. Rays will be cast from the view point and in 2D the resulting image points are drawn.
 
 In 3D you get the first-person perspective of the rays, which is not possible in 2D (it would become a 1D image). The engine converts 3D triangle meshes to polygons for mirrors. All faces that are connected and have the same normal become a single mirror in the shader.
